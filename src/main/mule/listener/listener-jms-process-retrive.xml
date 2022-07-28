@@ -14,5 +14,5 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 			<jms:response outboundContentType="application/json" />
 		</jms:listener>
 		<flow-ref doc:name="orchestrator-jms-start-transactions_purchase-order" doc:id="10a9bbe8-ff96-4c48-97e1-9457bccb0619" name="orchestrator-jms-start-transactions-purchase-order" />
-	</flow>
+	</flow>	
 </mule>

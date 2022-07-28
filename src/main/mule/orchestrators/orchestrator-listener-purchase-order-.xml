@@ -38,36 +38,6 @@ output application/json
 				</ee:transform>
 				<flow-ref doc:name="orchestrator-listener-purchase-order-start" doc:id="fe101577-c3ad-4ef9-9364-cd9e49e59c69" name="orchestrator-listener-purchase-order-start"/>
 			</when>
-			<when expression="#[(payload.CISDocument.Load.CurrentLoadOperationalStatusEnumVal == 'S_IN_TRANSIT') or (payload.CISDocument.Load.CurrentLoadOperationalStatusEnumVal == 'S_COMPLETED' and payload.CISDocument.Load.CurrentLoadFinancialStatusEnumVal == 'S_F_VOUCHER_PENDING')]">
-				<ee:transform doc:name="Transform Message" doc:id="97a82a74-6e1f-4998-bad2-ecda06fe0a76">
-			<ee:message>
-				<ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-"Load":{
-    "SystemLoadID": payload.CISDocument.Load.SystemLoadID,
-    "CurrencyCode" : payload.CISDocument.Load.CurrencyCode,
-    "division_code":payload.CISDocument.Load.DivisionCode,
-    "AdditionalChargesAmount": payload.CISDocument.Load.AdditionalChargesAmount,
-    "CurrentLoadOperationalStatusEnumVal" : payload.CISDocument.Load.CurrentLoadOperationalStatusEnumVal,
-    "ActualChargedAmount": payload.CISDocument.Load.ActualChargedAmount,
-    "CarrierCode": payload.CISDocument.Load.CarrierCode,
-    "ServiceCode": payload.CISDocument.Load.ServiceCode,
-    "CustomerCode":payload.CISDocument.Load.CustomerCode default "",
-    "RatingValidFlag": payload.CISDocument.Load.RatingValidFlag,
-    "NumberOfShipments" : payload.CISDocument.Load.NumberOfShipments,
-    "SystemShipmentID" : (if (payload.CISDocument.Load.SystemShipmentID == null) payload.CISDocument.Load.ShipmentLeg.SystemShipmentID else payload.CISDocument.Load.SystemShipmentID) default "",
-    "ShipmentNumber" : payload.CISDocument.Load.ShipmentLeg.ShipmentNumber  default "",
-    "NumberOfShipments": sizeOf(payload.CISDocument.Load.*ShipmentLeg),
-    "ReferenceNumber27" : payload.CISDocument.Load.ReferenceNumber27,
-    "shipments": payload.CISDocument.Load.*ShipmentLeg map ((item, index) -> item.ShipmentNumber)
-
-}
-]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-				<flow-ref doc:name="Call orchestrator-p_cost" doc:id="f417079e-6819-400f-866b-d903f49f68e3" name="orchestrator-p_cost-principal" />
-			</when>
 			<otherwise >
 				<logger level="INFO" doc:name="Logger" doc:id="bc0614ed-d3d2-4b9f-9255-1c2c5eb3c042" />
 			</otherwise>
