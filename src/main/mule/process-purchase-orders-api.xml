@@ -124,6 +124,6 @@ output application/json
         </error-handler>
     </flow>
     <flow name="post:\sap\order\purchases:process-purchase-orders-api-config">
-		<flow-ref doc:name="orchestrator-post-purchase-order-start" doc:id="ab16900c-26bc-49e8-b7c5-a69f4d4314c0" name="orchestrator-post-purchase-order-start"/>
+		<flow-ref doc:name="orchestrator-listener-purchase-order-start" doc:id="ab16900c-26bc-49e8-b7c5-a69f4d4314c0" name="orchestrator-listener-purchase-order-start"/>
     </flow>
 </mule>

@@ -624,4 +624,10 @@ vars.header_load update ["Load","centro_beneficios"] with (if((vars.relatedShipm
 		</ee:transform>
 		<set-payload value="#[vars.header_load]" doc:name="Set Payload" doc:id="efe4ae6e-1e94-4a6a-8788-dd61a6e23f00" />
 	</sub-flow>	
+		<sub-flow name="orchestrator-post-purchaseorder-error-continue" doc:id="d270898a-e06a-4da4-9191-b384bcbd76fc" >
+		<logger level="INFO" doc:name="Response SAP" doc:id="c0460c76-bc42-4cff-8f8a-2e25cb0f294c" message="#['\n\n\n\n'] ********************* Response SAP ********************* #['\n\n\n\n'] #[payload]" />
+		<flow-ref doc:name="Call to clients-experience-commons-logs-purchaseorder-response" doc:id="3d7501c3-6fbe-403b-ac10-ab1961df3968" name="clients-experience-commons-logs-purchaseorder-response"/>
+		<set-payload value="#[vars.responsesap]" doc:name="Set Payload" doc:id="e5f4041d-dcc6-4d9b-8b4d-40123107ef16" />
+		<flow-ref doc:name="orchestrator-listener-purchase-order-validator-ex-status" doc:id="91bd60d1-be3a-446b-baed-97cba5abb5e0" name="orchestrator-listener-purchase-order-validator-ex-status" />
+	</sub-flow>
 </mule>
