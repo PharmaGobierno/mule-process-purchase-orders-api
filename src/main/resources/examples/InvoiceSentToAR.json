@@ -1,0 +1,88 @@
+
+{
+    "CISDocument":{
+        "EventName":"InvoiceSentToAR",
+        "ReasonCode":"ACCR",
+        "ReasonCodeDescription":"Account Receivable",
+        "SystemTimeZoneOffset":"0.000000",
+        "EventDateTime":"2021-04-23T16:31:10",
+        "EventReportedDateTime":"2021-04-23T16:31:10",
+        "EventOccurredDateTime":"2021-04-23T16:31:10",
+        "EventOccurredTimeZoneOffset":"0.000000",
+        "EventUser":"SAP",
+        "SystemInvoiceID":"10388",
+        "SystemInvoiceNumber":"000000009091",
+        "DivisionCode":"TXL",
+        "LogisticsGroup":"TXL",
+        "InvoiceType":"0",
+        "InvoiceDate":"2021-04-23",
+        "AccountingPeriod":"4.000000",
+        "FiscalYear":"2021.000000",
+        "PaymentTerms":"0",
+        "PaymentDueDate":"2021-04-23",
+        "CurrencyType":"MXN",
+        "TotalInvoiceAmount":"77334.750000",
+        "CustomerCode":"MXS0008",
+        "BillToCustomerCode":"MXS0008",
+        "BillToCustomerVersion":{
+            "BillToCustomerName":"TRANSPORTES DE CARGA GRUPO MYM SA DE CV",
+            "BillToCustomerAddress":{
+                "BillToCustomerStreet":"INSURGENTES NORTE 1290 COL CALPUTITLAN",
+                "BillToCustomerCity":"CIUDAD DE MEXICO",
+                "BillToCustomerPostalCode":"07370",
+                "BillToCustomerStateCode":"DF",
+                "BillToCustomerCountryCode":"MEX",
+                "BillToCustomerTimeZoneOffset":"0.000000"
+            }
+        },
+        "InvoiceDetails":{
+            "InvoiceDetailID":"10194",
+            "InvoiceDetailSequenceNumber":"1",
+            "InvoiceDetailReferenceNumber":"22110",
+            "InvoiceDetailFreightBillDetailAmount":"77334.750000",
+            "InvoiceDetailFreightBillTaxAmount":"0.000000",
+            "InvoiceDetailApprovedDetailAmount":"77334.750000",
+            "InvoiceDetailApprovedTaxAmount":"0.000000",
+            "InvoiceDetailStatus":{
+                "InvoiceDetailStatusCode":"INVCDTLAPRD"
+            },
+            "InvoiceDetailVoucher":{
+                "InvoiceDetailVoucherVersion":"*DFT",
+                "InvoiceDetailVoucherShipment":{
+                    "SystemShipmentID":"22110",
+                    "SystemShipmentNumber":"SH-000022110",
+                    "ShipmentDescription":"941",
+                    "OriginTypeEnumVal":"HUB",
+                    "OriginCode":"JUANE_NAYAR_NA_63780_03",
+                    "OriginName":"JUAN ESCUTIA, COMPOSTELA, NAYARIT",
+                    "OriginAddress":{
+                        "OriginStreet":"ACARR. JUAN ESCUTIA KM 1",
+                        "OriginCity":"NAYARIT",
+                        "OriginPostalCode":"63780",
+                        "OriginStateCode":"NA",
+                        "OriginCountryCode":"MEX",
+                        "OriginTimeZoneOffset":"-2.000000"
+                    },
+                    "DestinationTypeEnumVal":"HUB",
+                    "DestinationCode":"ALMAC_ATLAC_EM_50458_04",
+                    "DestinationName":"ALMACEN ATLACOMULCO - EDO DE MEXICO",
+                    "DestinationAddress":{
+                        "DestinationStreet":"KMS A  CALLE JUAN, PARQUE INDUSTRIAL ATLACOMULCO, C.P. 50450",
+                        "DestinationCity":"ATLACOMULCO",
+                        "DestinationPostalCode":"50450",
+                        "DestinationStateCode":"EM",
+                        "DestinationCountryCode":"MEX",
+                        "DestinationTimeZoneOffset":"0.000000"
+                    }
+                },
+                "InvoiceDetailVoucherChargeDetails":{
+                    "ChargeDetailID":"577172",
+                    "ChargeDetailChargeAmount":"0.000000",
+                    "ChargeDetailRatingUnit":"0.000000",
+                    "ChargeDetailDiscount":"0.000000",
+                    "ChargeDetailChargePayment":"77334.750000"
+                }
+            }
+        }
+    }
+}

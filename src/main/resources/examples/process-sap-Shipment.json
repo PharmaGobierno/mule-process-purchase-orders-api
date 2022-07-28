@@ -1,0 +1,21 @@
+{
+  "Shipment": {
+    "SystemShipmentID": "7676",
+    "ShipmentNumber": "LCT_TST_3088",
+	"ARServiceCode" : "Algo",
+	"CurrencyCodeDescr":"Algo",
+    "CustomerCode": "20202042",
+    "ProfitCenterCode": "TXLM",
+    "CurrentShipmentFinancialStatusEnumVal": "S_F_ELIGIBLE",
+    "SystemLoadID": "5764",
+    "AdditionalChargesAmount": "0",
+    "ChargedAmount": "0",
+    "ReferenceNumber1":"",
+	"ReferenceNumber2":"",
+	"ReferenceNumber3": "INBOUND",
+    "ReferenceNumber4": "57641599843136",
+	"ReferenceNumber5":"",
+	"ReferenceNumber6":""
+	
+  }
+}

@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_d6c83b06_0986_4826_b462_f45410902488_Output_Variables_load = Any
+

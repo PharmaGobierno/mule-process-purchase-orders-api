@@ -1,0 +1,423 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="clients-experience-commons-logs-orderincome-request" doc:id="aa64d395-b78e-45aa-ac17-a27890480a8d" >
+		<http:request method="POST" doc:name="Request" doc:id="238a33c7-9992-405f-b5b0-67bac0525cd4" config-ref="client-system-commons-logs-HTTP_Request_configuration" path="${client.system.commons.logs.http.path.insert}" >
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('client.db.https.client_secret'),
+	"client_id" : p('client.db.https.client_id')
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	date : vars.date_message,
+	reference3 : payload.d.EX_RETURN.VBAK_VBELN,
+	message_type : "Request",
+	reference1 : vars.ref1,
+	source : "Provision Ingreso",
+	id : vars.id,
+	reference2 : vars.ref2
+}]]]></http:query-params>
+		</http:request>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="2836a5bb-031e-4a90-8cbe-8c9c331b85ce" type="ANY">
+				<ee:transform doc:name="Transform Message" doc:id="7e6ba91e-a248-4c57-8da7-ccb564d0bcd0" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{error: error.description}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="clients-experience-commons-logs-orderincome-response" doc:id="344b1ec9-cefd-40af-89b6-5fbb4cf3daa5" >
+		<http:request method="POST" doc:name="Request" doc:id="5d665f0e-fd73-4863-80f4-06ff10118f70" config-ref="client-system-commons-logs-HTTP_Request_configuration" path="${client.system.commons.logs.http.path.insert}" >
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('client.db.https.client_secret'),
+	"client_id" : p('client.db.https.client_id')
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	date : vars.date_message,
+	reference3 : payload.d.EX_RETURN.VBAK_VBELN,
+	message_type : "Response",
+	reference1 : vars.ref1,
+	source : "Provision Ingreso",
+	id : vars.id,
+	reference2 : vars.ref2
+}]]]></http:query-params>
+		</http:request>
+		<error-handler>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="88e83cd9-f9be-4e45-872c-becb105164d8" type="ANY" >
+				<ee:transform doc:name="Transform Message" doc:id="81d2505a-455a-461f-b71f-f7c451d4d7fe" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{error: error.description}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="clients-experience-commons-logs-orderincome-tms" doc:id="a74cd784-3e96-47eb-8ad1-aee745fc4a85">
+		<http:request method="POST" doc:name="Request" doc:id="95ca1eae-3e67-483f-a8b3-2a182248f42b" config-ref="client-system-commons-logs-HTTP_Request_configuration" path="${client.system.commons.logs.http.path.insert}">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('client.db.https.client_secret'),
+	"client_id" : p('client.db.https.client_id')
+}]]]></http:headers>
+			<http:query-params><![CDATA[#[output application/java
+---
+{
+	date : (now()>>'America/Mexico_City') as String {format: "y-MM-dd"},
+	reference3 : vars.ShipmentTMS.Shipment.SystemLoadID,
+	message_type : "TMS Provision Ingreso",
+	reference1 : vars.ShipmentTMS.Shipment.ShipmentNumber,
+	source : "Provision Ingreso",
+	id : vars.ShipmentTMS.Shipment.SystemShipmentID,
+	reference2 : vars.ShipmentTMS.Shipment.ShipmentDescription
+}]]]></http:query-params>
+		</http:request>
+		<error-handler>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="eb2471a0-0c0a-4156-bfc4-0d5644f02d77" type="ANY">
+				<ee:transform doc:name="Transform Message" doc:id="0c82da64-efa2-4e1e-852f-a1d4c8ec8163">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{error: error.description}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="clients-experience-commons-logs-provisioncost-request" doc:id="0968953b-69da-4a31-999d-6502638c2652" >
+		<http:request method="POST" doc:name="Request" doc:id="8ded887b-f276-490c-9163-adb4a3e83600" config-ref="client-system-commons-logs-HTTP_Request_configuration" path="${client.system.commons.logs.http.path.insert}" >
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('client.db.https.client_secret'),
+	"client_id" : p('client.db.https.client_id')
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	date : vars.date_message,
+	message_type : "Request",
+	reference1 : vars.ref1,
+	source : "Provision Costo",
+	id : vars.id
+}]]]></http:query-params>
+		</http:request>
+		<error-handler>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="2112bb8d-a6e6-48d9-bff8-5f64ad7defc5" type="ANY" >
+				<ee:transform doc:name="Transform Message" doc:id="a01d92e5-33b4-4c5b-8ed1-37d37b2f9fa1" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{error: error.description}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="clients-experience-commons-logs-provisioncost-response" doc:id="a358c5d4-2593-428e-be4b-0f4cb0e35b68" >
+		<http:request method="POST" doc:name="Request" doc:id="b063b02c-1a76-4f57-ba07-179e307c52fa" config-ref="client-system-commons-logs-HTTP_Request_configuration" path="${client.system.commons.logs.http.path.insert}" >
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('client.db.https.client_secret'),
+	"client_id" : p('client.db.https.client_id')
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	date : vars.date_message,
+	message_type : "Response",
+	reference1 : vars.ref1,
+	source : "Provision Costo",
+	id : vars.id,
+	reference2 : payload.d.im_xblnr
+}]]]></http:query-params>
+		</http:request>
+		<error-handler>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="b2205578-b905-4cd2-a4bd-1b0cf7c8f615" type="ANY" >
+				<ee:transform doc:name="Transform Message" doc:id="1ea4be44-5f61-42fa-aba2-0ddebf2dc660" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{error: error.description}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="clients-experience-commons-logs-provisioncost-tms" doc:id="83f55d5b-38ce-4660-b1c8-d0c82e92d976">
+		<http:request method="POST" doc:name="Request" doc:id="e1c6a01e-5060-4495-8924-6560304ec2fa" config-ref="client-system-commons-logs-HTTP_Request_configuration" path="${client.system.commons.logs.http.path.insert}">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('client.db.https.client_secret'),
+	"client_id" : p('client.db.https.client_id')
+}]]]></http:headers>
+			<http:query-params><![CDATA[#[output application/java
+---
+{
+	date : (now()>>'America/Mexico_City') as String {format: "y-MM-dd"},
+	message_type : "TMS Provision Costo",
+	reference1 : vars.relatedShipment.Shipment.ProfitCenterCode,
+	source : "Provision Costo",
+	id : vars.load.Load.SystemLoadID
+}]]]></http:query-params>
+		</http:request>
+		<error-handler>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="3bec241f-428f-447f-93d8-233939cad668" type="ANY">
+				<ee:transform doc:name="Transform Message" doc:id="d6da0d9f-2c7a-4789-ab7c-68e837f2c78e">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{error: error.description}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="clients-experience-commons-logs-purchaseorder-request" doc:id="a505c183-1d83-4d07-91fd-1b409ab394e5" >
+		<http:request method="POST" doc:name="Request" doc:id="a8a2c590-bb86-48b3-b603-19322fcacae6" config-ref="client-system-commons-logs-HTTP_Request_configuration" path="${client.system.commons.logs.http.path.insert}" >
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('client.db.https.client_secret'),
+	"client_id" : p('client.db.https.client_id')
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	date : (now()>>'America/Mexico_City') as String {format: "y-MM-dd"},
+	reference3 : vars.FreightBillMessage.GLTransaction.ProfitCenterCode[0],
+	message_type : "Request",
+	reference1 : vars.FreightBillMessage.GLTransaction.CarrierCode[0],
+	source : "Purchase Order",
+	id : vars.FreightBillMessage.GLTransaction.SystemLoadID[0],
+	reference2 : vars.FreightBillMessage.GLTransaction.CarrierDescription[0]
+}]]]></http:query-params>
+		</http:request>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="7aaff20c-ea0e-4f6e-aca7-78692bc24072" type="ANY" >
+				<ee:transform doc:name="Transform Message" doc:id="ed8d344c-1d49-4190-ab65-3e55e8d2f159" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{error: error.description}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="clients-experience-commons-logs-purchaseorder-response" doc:id="88bcb309-e1d1-4904-bce9-b5dea049dc9a" >
+		<http:request method="POST" doc:name="Request" doc:id="e52f36ca-a95a-4995-82b4-84d30bc7f000" config-ref="client-system-commons-logs-HTTP_Request_configuration" path="${client.system.commons.logs.http.path.insert}" >
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('client.db.https.client_secret'),
+	"client_id" : p('client.db.https.client_id')
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	date : (now()>>'America/Mexico_City') as String {format: "y-MM-dd"},
+	reference3 : vars.FreightBillMessage.GLTransaction.ProfitCenterCode[0],
+	message_type : "Response",
+	reference1 : vars.FreightBillMessage.GLTransaction.CarrierCode[0],
+	source : "Purchase Order",
+	id : vars.FreightBillMessage.GLTransaction.SystemLoadID[0],
+	reference2 : vars.FreightBillMessage.GLTransaction.CarrierDescription[0]
+}]]]></http:query-params>
+		</http:request>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="d9037189-0563-4c5a-ab06-7631ca2a31e9" type="ANY" >
+				<ee:transform doc:name="Transform Message" doc:id="0b84ce60-acd5-4b1a-9383-8520c8751518" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{error: error.description}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="clients-experience-commons-logs-purchaseorder-tms" doc:id="60b4d72f-564f-4610-8a07-e22184f05af1">
+		<http:request method="POST" doc:name="Request" doc:id="62e27296-e5ae-4c2e-bea6-97a485a0d42d" config-ref="client-system-commons-logs-HTTP_Request_configuration" path="${client.system.commons.logs.http.path.insert}">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('client.db.https.client_secret'),
+	"client_id" : p('client.db.https.client_id')
+}]]]></http:headers>
+			<http:query-params><![CDATA[#[output application/java
+---
+{
+	date : (now()>>'America/Mexico_City') as String {format: "y-MM-dd"},
+	reference3 : vars.FreightBillMessage.GLTransaction.ProfitCenterCode[0],
+	message_type : "TMS Purchase Order",
+	reference1 : vars.FreightBillMessage.GLTransaction.CarrierCode[0],
+	source : "Purchase Order",
+	id : vars.FreightBillMessage.GLTransaction.SystemLoadID[0],
+	reference2 : vars.FreightBillMessage.GLTransaction.CarrierDescription[0]
+}]]]></http:query-params>
+		</http:request>
+		<error-handler>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="6b11836c-9df1-4096-98b6-ce6942016404" type="ANY">
+				<ee:transform doc:name="Transform Message" doc:id="2417d7da-c5cd-412c-9fef-74e0cdd20750">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{error: error.description}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="clients-experience-commons-logs-salesorder-tms" doc:id="829497bf-6310-4b7d-99d3-4f451eaf167e">
+		<http:request method="POST" doc:name="Request" doc:id="ad07a254-9f1e-4cfa-a51c-301c06fae42d" config-ref="client-system-commons-logs-HTTP_Request_configuration" path="${client.system.commons.logs.http.path.insert}">
+			<http:body><![CDATA[#[vars.InvoiceNumber]]]></http:body>
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('client.db.https.client_secret'),
+	"client_id" : p('client.db.https.client_id')
+}]]]></http:headers>
+			<http:query-params><![CDATA[#[output application/java
+---
+{
+	date : (now()>>'America/Mexico_City') as String {format: "y-MM-dd"},
+	reference3 : payload.GLTransaction.InvoiceNumber[0] default "",
+	message_type : "TMS Sales Order",
+	reference1 : payload.GLTransaction.CustomerCode[0] default "",
+	source : "Sales Order",
+	id : payload.GLTransaction.SystemShipmentNumber[0] default "",
+	reference2 : payload.GLTransaction.CustomerDescription[0] default ""
+}]]]></http:query-params>
+		</http:request>
+		<error-handler>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="fb1b1dfb-8aba-4360-89b9-fe34f87374ff" type="ANY">
+				<ee:transform doc:name="Transform Message" doc:id="e915e7ed-f025-4b0b-98b6-b480b3c083ef">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{error: error.description}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="clients-experience-commons-logs-salesorder-request" doc:id="3b6d982c-68be-4512-84ef-1d453d53452d" >
+		<http:request method="POST" doc:name="Request" doc:id="e2ddba1a-251f-470f-ac02-72fcb3a8e649" config-ref="client-system-commons-logs-HTTP_Request_configuration" path="${client.system.commons.logs.http.path.insert}" >
+			<http:body ><![CDATA[#[vars.requestsalesorder]]]></http:body>
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('client.db.https.client_secret'),
+	"client_id" : p('client.db.https.client_id')
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	date : (now()>>'America/Mexico_City') as String {format: "y-MM-dd"},
+	reference3 : payload.GLTransaction.InvoiceNumber[0] default "",
+	message_type : "Request",
+	reference1 : payload.GLTransaction.CustomerCode[0] default "",
+	source : "Sales Order",
+	id : payload.GLTransaction.SystemShipmentNumber[0] default "",
+	reference2 : payload.GLTransaction.CustomerDescription[0] default ""
+}]]]></http:query-params>
+		</http:request>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="c4dee09b-f655-4ef4-8cb5-d67102bdb403" type="ANY" >
+				<ee:transform doc:name="Transform Message" doc:id="13645dc6-0693-478e-8e77-72c0bb994690" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{error: error.description}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="clients-experience-commons-logs-salesorder-response" doc:id="108ef6b1-952e-4f17-b1fd-c6b66940e9a4" >
+		<http:request method="POST" doc:name="Request" doc:id="541c41af-2608-4a22-9b3c-4b9f29d4d67b" config-ref="client-system-commons-logs-HTTP_Request_configuration" path="${client.system.commons.logs.http.path.insert}" >
+			<http:body ><![CDATA[#[vars.responsesap]]]></http:body>
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('client.db.https.client_secret'),
+	"client_id" : p('client.db.https.client_id')
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	date : (now()>>'America/Mexico_City') as String {format: "y-MM-dd"},
+	reference3 : payload.GLTransaction.InvoiceNumber[0] default "",
+	message_type : "Response",
+	reference1 : payload.GLTransaction.CustomerCode[0] default "",
+	source : "Sales Order",
+	id : payload.GLTransaction.SystemShipmentNumber[0] default "",
+	reference2 : payload.GLTransaction.CustomerDescription[0] default ""
+}]]]></http:query-params>
+		</http:request>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="2f841bba-614e-4f40-83de-b6a362b23e7f" type="ANY" >
+				<ee:transform doc:name="Transform Message" doc:id="4c94bae4-4cad-4a6e-ba58-7103f4bb3c46" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{error: error.description}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="clients-experience-commons-logs-salesorder-tms-full" doc:id="51c92786-ee3b-4512-81b0-6896b81e17ea" >
+		<http:request method="POST" doc:name="Request" doc:id="a098a1f5-70ee-4c83-addf-39f81957bb07" config-ref="client-system-commons-logs-HTTP_Request_configuration" path="${client.system.commons.logs.http.path.insert}" >
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('client.db.https.client_secret'),
+	"client_id" : p('client.db.https.client_id')
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	date : (now()>>'America/Mexico_City') as String {format: "y-MM-dd"},
+	reference3 : "",
+	message_type : "TMS Sales Order Request",
+	reference1 : "",
+	source : "Sales Order",
+	id : "",
+	reference2 : ""
+}]]]></http:query-params>
+		</http:request>
+	</flow>
+</mule>

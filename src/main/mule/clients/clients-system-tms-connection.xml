@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="client-system-tms-connection" doc:id="3bfc85d1-cca0-4abb-aa15-a099ca12e9bf" >
+		<http:request method="POST" doc:name="Request" doc:id="ea496c3c-633a-4023-9086-e134b17b181f" config-ref="client-system-tms-connection-HTTP_Request_configuration" path="${client.system-tms-connection.http.path.addcarrier}">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_id": p('client.tms.https.client_id'),
+	"client_secret": p('client.tm.https.client_secret')
+}]]]></http:headers>
+		</http:request>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="c6f431cd-3ce6-46ab-8778-7ebc642abdcc" type="HTTP:BAD_REQUEST, HTTP:CLIENT_SECURITY, HTTP:FORBIDDEN, HTTP:INTERNAL_SERVER_ERROR, HTTP:METHOD_NOT_ALLOWED, HTTP:NOT_ACCEPTABLE, HTTP:NOT_FOUND, HTTP:PARSING, HTTP:RETRY_EXHAUSTED, HTTP:SECURITY, HTTP:SERVICE_UNAVAILABLE, HTTP:TIMEOUT, HTTP:TOO_MANY_REQUESTS, HTTP:UNAUTHORIZED, HTTP:UNSUPPORTED_MEDIA_TYPE, EXPRESSION, STREAM_MAXIMUM_SIZE_EXCEEDED" >
+				<ee:transform doc:name="Transform Message" doc:id="65d09253-2254-4bb4-a995-90388dfabf2f" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	error:error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="e5e3f684-9d1d-425d-9e63-7db7c9237d9b" type="HTTP:CONNECTIVITY" >
+				<ee:transform doc:name="Transform Message" doc:id="46f032a5-287b-4096-9862-9f274a4eb083" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	error:error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="client-system-tms-connection-vouchers" doc:id="92d9745a-7859-4a09-9eda-579677f2d46a" >
+		<http:request method="GET" doc:name="get vouchers load" doc:id="0a5bc3db-e8c4-4dae-85ab-97665fe6d072" config-ref="client-system-tms-connection-HTTP_Request_configuration" path="${client.system-tms-connection.http.path.vouchers}" correlationId="#[correlationId]" responseTimeout="180000">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_id": p('client.tms.https.client_id'),
+	"client_secret": p('client.tm.https.client_secret')
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[%dw 2.0
+output application/json
+
+
+---
+
+payload.Load.vouchers reduce ((voucher, child={}) ->
+
+child ++ { ids: voucher.voucher_id
+
+})]]]></http:query-params>
+		</http:request>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="b96c937c-5b42-4bca-b5a4-64cd2fd0cafb" type="HTTP:BAD_REQUEST, HTTP:CLIENT_SECURITY, HTTP:FORBIDDEN, HTTP:INTERNAL_SERVER_ERROR, HTTP:METHOD_NOT_ALLOWED, HTTP:NOT_ACCEPTABLE, HTTP:NOT_FOUND, HTTP:PARSING, HTTP:RETRY_EXHAUSTED, HTTP:SECURITY, HTTP:SERVICE_UNAVAILABLE, HTTP:TIMEOUT, HTTP:TOO_MANY_REQUESTS, HTTP:UNAUTHORIZED, HTTP:UNSUPPORTED_MEDIA_TYPE, EXPRESSION, STREAM_MAXIMUM_SIZE_EXCEEDED" >
+				<ee:transform doc:name="Transform Message" doc:id="fb596dc8-eb4b-4a76-88da-1bb7e24a38b4" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	error:error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="Copy_of_On Error Propagate" doc:id="22f284f1-5e3d-4139-a983-2acd26a38e0e" type="HTTP:CONNECTIVITY" >
+				<ee:transform doc:name="Transform Message" doc:id="c0edfab3-ecd2-444a-b3e9-7ca297d070bf" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	error:error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>

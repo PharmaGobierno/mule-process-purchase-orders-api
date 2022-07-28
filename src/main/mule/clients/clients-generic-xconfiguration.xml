@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="fe02ebf9-62c6-412f-a0c1-50c491432a03" >
+		<http:request-connection protocol="HTTPS" host="${system.generic.xconfiguration.http.host}" port="${system.generic.xconfiguration.http.port}" />
+	</http:request-config>
+	<sub-flow name="clients-generic-xconfiguration-CEBE-converter" doc:id="9d0ee35b-9f74-48ad-9500-d5bf7d9c327a" >
+		<http:request method="GET" doc:name="Request" doc:id="a1cc4f01-c787-446b-97b4-91408b8b6e6d" config-ref="HTTP_Request_configuration" path="/api/xconfiguration/search">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('system.generic.xconfiguration.http.client_secret'),
+	"client_id" : p('system.generic.xconfiguration.http.client_id')
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[{
+"xConfigurationType":'cost_ctr_tranlastion',
+"input1":vars.CEBE,
+"input2":"",
+"input3":"",
+"input4":"",
+"input5":"",
+"input6":"",
+"input7":"",
+"input8":"",
+"input9":"",
+"input10":"",
+"input1Method":"true",
+"input2Method":"valNullDrvn",
+"input3Method":"valNullDrvn",
+"input4Method":"valNullDrvn",
+"input5Method":"valNullDrvn",
+"input6Method":"valNullDrvn",
+"input7Method":"valNullDrvn",
+"input8Method":"valNullDrvn",
+"input9Method":"valNullDrvn",
+"input10Method":"valNullDrvn"
+}]]]></http:query-params>
+		</http:request>
+		<set-variable value='#[payload[0].output1 default "TXP"]' doc:name="set incomeTXP" doc:id="fda2ecf2-f9ce-4a71-bbfb-874870d461c3" variableName="incomeTXP"/>
+		<set-variable value="#[payload[0].output2]" doc:name="Set CEBE_TranslateTXL" doc:id="aba94a6c-4263-4bbb-bb1d-42a0bc296112" variableName="CEBE_TranslateTXL"/>
+	</sub-flow>
+	<sub-flow name="clients-generic-xconfiguration-CEBE-converter-provisionIngreso" doc:id="7bb2877d-69ea-4cec-b3d0-dc5a25801414" >
+		<http:request method="GET" doc:name="Request" doc:id="91f05324-7a60-4eff-b60b-bff57c95aa49" config-ref="HTTP_Request_configuration" path="/api/xconfiguration/search" >
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('system.generic.xconfiguration.http.client_secret'),
+	"client_id" : p('system.generic.xconfiguration.http.client_id')
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[{
+"xConfigurationType":'cost_ctr_tranlastion',
+"input1":vars.ProfitCenterCode,
+"input2":"",
+"input3":"",
+"input4":"",
+"input5":"",
+"input6":"",
+"input7":"",
+"input8":"",
+"input9":"",
+"input10":"",
+"input1Method":"true",
+"input2Method":"valNullDrvn",
+"input3Method":"valNullDrvn",
+"input4Method":"valNullDrvn",
+"input5Method":"valNullDrvn",
+"input6Method":"valNullDrvn",
+"input7Method":"valNullDrvn",
+"input8Method":"valNullDrvn",
+"input9Method":"valNullDrvn",
+"input10Method":"valNullDrvn"
+}]]]></http:query-params>
+		</http:request>
+		<set-variable value='#[payload[0].output1 default "TXP"]' doc:name="Copy_of_set incomeTXP" doc:id="6f318f30-30af-40a4-aa7d-dbb79a962a8a" variableName="CEBE_CompanyConverter" />
+		<set-variable value="#[payload[0].output2]" doc:name="Copy_of_Set CEBE_TranslateTXL" doc:id="28d0290e-bc1b-4a84-9f18-09e0ee33c9a9" variableName="CEBE_TranslateTXL" />
+	</sub-flow>
+	<sub-flow name="clients-generic-xconfiguration-material_income_converter" doc:id="c74103b5-87bc-4314-8150-50ab782da89a" >
+		<http:request method="GET" doc:name="Get Material Income Converter" doc:id="107c0ff4-c0bb-4da8-8553-6fc31a86bd99" config-ref="HTTP_Request_configuration" path="/api/xconfiguration/search" >
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('system.generic.xconfiguration.http.client_secret'),
+	"client_id" : p('system.generic.xconfiguration.http.client_id')
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[{
+"xConfigurationType":vars.material_type_converter,
+"input1":vars.logistics_group_code,
+"input2":vars.charge_code,
+"input3":vars.transaction_type default "",
+"input4":"",
+"input5":"",
+"input6":"",
+"input7":"",
+"input8":"",
+"input9":"",
+"input10":"",
+"input1Method":"true",
+"input2Method":"true",
+"input3Method":"valNullDrvn",
+"input4Method":"valNullDrvn",
+"input5Method":"valNullDrvn",
+"input6Method":"valNullDrvn",
+"input7Method":"valNullDrvn",
+"input8Method":"valNullDrvn",
+"input9Method":"valNullDrvn",
+"input10Method":"valNullDrvn"
+}]]]></http:query-params>
+		</http:request>
+		<set-variable value="#[payload]" doc:name="material_respose" doc:id="1f990d71-a914-4816-ad68-83610135daae" variableName="material_response"/>
+	</sub-flow>
+	<sub-flow name="clients-generic-xconfiguration-AVIOR-porcent" doc:id="4fd77ff4-c595-4ede-976a-80a4ff36f195" >
+		<http:request method="GET" doc:name="Request" doc:id="8e489b4b-1661-454e-84ef-ee33176d77bb" config-ref="HTTP_Request_configuration" path="/api/xconfiguration/search" >
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('system.generic.xconfiguration.http.client_secret'),
+	"client_id" : p('system.generic.xconfiguration.http.client_id')
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[{
+"xConfigurationType":'porcent_AVIOR',
+"input1":vars.project_name_sh,
+"input2":"",
+"input3":"",
+"input4":"",
+"input5":"",
+"input6":"",
+"input7":"",
+"input8":"",
+"input9":"",
+"input10":"",
+"input1Method":"true",
+"input2Method":"valNullDrvn",
+"input3Method":"valNullDrvn",
+"input4Method":"valNullDrvn",
+"input5Method":"valNullDrvn",
+"input6Method":"valNullDrvn",
+"input7Method":"valNullDrvn",
+"input8Method":"valNullDrvn",
+"input9Method":"valNullDrvn",
+"input10Method":"valNullDrvn"
+}]]]></http:query-params>
+		</http:request>
+		<set-variable value='#[payload[0].output1 default "0"]' doc:name="Copy_of_set incomeTXP" doc:id="382c2dc8-77eb-4b1e-b19f-1d9a8ec64140" variableName="porcent_avior" />
+	</sub-flow>
+</mule>

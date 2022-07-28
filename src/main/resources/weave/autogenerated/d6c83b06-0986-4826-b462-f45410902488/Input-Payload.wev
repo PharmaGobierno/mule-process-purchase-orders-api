@@ -1,0 +1,17 @@
+%dw 2.0
+
+type auto_d6c83b06_0986_4826_b462_f45410902488_Input_Payload = {|
+  origin_system: String, 
+  document_date: String, 
+  posting_date: String, 
+  society: String, 
+  document_type: "LO" | "RS" | "", 
+  currency_key: Null, 
+  exchange_rate: String, 
+  conversion_date: String, 
+  reference_document_number: Null, 
+  document_header_text: String, 
+  items: Null, 
+  message_table: Array<{|    provider_account_number: String,     society: String,     reference_document_number: String,     registration_date: String,     registration_document_number: String,     message_description: String  |}>
+|}
+

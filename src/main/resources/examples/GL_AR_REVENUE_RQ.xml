@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CISDocument>
+  <!--OpName=processAPVoucherRetrieve , OpType=Request , PortType=TransportationManager-->
+  <ApiHeader>
+    <OperationName>processGLTransactionRetrieve</OperationName>
+  </ApiHeader>
+  <GLTransactionTypeEnumVal>GLTT_POSTED</GLTransactionTypeEnumVal>
+  <GLClassificationEnumVal>GLC_AR_REVENUE</GLClassificationEnumVal>
+  <InvoiceNumber></InvoiceNumber>
+  
+</CISDocument>
+

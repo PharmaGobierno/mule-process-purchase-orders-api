@@ -1,0 +1,21 @@
+{
+  "Shipment": {
+    "SystemShipmentID": "25985",
+    "ShipmentNumber": "SH-000025985",
+    "CustomerCode": "201014405",
+    "ARServiceCode": "FTL",
+    "ShipmentDescription": "114P8BY5K",
+    "PickupToDateTime": "2021-02-15T20:00:00",
+    "ProfitCenterCode": "010201",
+    "CurrencyCode": "MXN",
+    "CurrencyCodeDescr": "PESO MEXICANO",
+    "CurrentShipmentFinancialStatusEnumVal": "S_F_ELIGIBLE",
+    "SystemLoadID": "18156",
+    "NumberOfShipmentLegs": "1",
+    "AdditionalChargesAmount": "0",
+    "ChargedAmount": "14700",
+    "ReferenceNumber3": "INBOUND",
+    "ReferenceNumber6": "TRAXION AMAZON NACIONAL",
+    "CustomerServiceRepresentativeCode":"TXL"
+  }
+}

@@ -1,0 +1,682 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:traxion-s-logger="http://www.mulesoft.org/schema/mule/traxion-s-logger" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/traxion-s-logger http://www.mulesoft.org/schema/mule/traxion-s-logger/current/mule-traxion-s-logger.xsd">
+	<sub-flow name="orchestrator-post-purchase-order-start" doc:id="fef3308d-65d8-47b4-b43a-e31df00ebfe0" >
+		<set-variable value="#[payload]" doc:name="header_load" doc:id="b7683800-941c-4947-aea5-39b9235ec54f" variableName="header_load"/>
+		<flow-ref doc:name="Get RelatedShipment" doc:id="ad207589-928f-4d42-9f05-d24b21686861" name="orchestrator-post-purchase-order-getRelatedShipment"/>
+		<choice doc:name="Choice" doc:id="7026ee0e-8213-4d2f-8c26-f95cc9ba1f2a" >
+			<when expression="#[vars.relatedShipment.Shipment.ReferenceNumber6 != 'SEGALMEX' and vars.relatedShipment.Shipment.ReferenceNumber6 != 'LICONSA' and vars.relatedShipment.Shipment.ReferenceNumber6 != 'DICONSA']">
+				<flow-ref doc:name="Get vouchers" doc:id="b87678f2-7b8a-400e-8890-0b076ae8e380" name="client-system-tms-connection-vouchers" />
+				<flow-ref doc:name="Call orchestrator-post-purchaseorder_v2" doc:id="b6dc236c-d509-4547-86f9-bba97e8cadde" name="orchestrator-post-purchaseorder_v2" />
+			</when>
+		</choice>
+	</sub-flow>
+	<flow name="orchestrator-post-purchaseorder_v2" doc:id="b5caaa2b-72f6-4f55-bc6b-0726f913f7b9" >
+		<ee:transform doc:name="Group by Carrier code" doc:id="f53c18aa-1225-4589-b83b-44a3d54579bb">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+ "freight_bill_numbers": payload.vouchers groupBy $.CarrierCode mapObject((voucher,carrier_code) ->{
+ 	"freight_bill": {
+ 	"carrier_code":carrier_code,	
+ 	   "type_transaction":"A",
+ 	"transaction": voucher.*VoucherCharge filter ($.ChargeCode != null and ( $.ChargeLevelEnumVal == 'CHL_OPTION'  and $.ChargeCode != 'AJUSTE_FLETE')   ) map ((item, index) -> 
+     {
+      
+         "charge_id":item.SystemChargeDetailID,
+         "carrier_code":carrier_code,
+         "load":item.SystemLoadID,
+         "charge_code":item.ChargeCode,
+         "charged_amount":item.ChargedAmount,
+         "currency_code":item.OriginalCurrencyCode,
+         "PrePurcjasedFlag":item.PrePurchasedFlag,
+         "charge_level":item.ChargeLevelEnumVal,
+         "type_amount":if ( (item.ChargedAmount as Number) > 0)   "positive" else "negative"
+
+     })
+         
+      			
+ 	}}++
+     "freight_bill": {
+ 	"carrier_code":carrier_code,
+ 	   "type_transaction":"F",	
+ 	"transaction": voucher.*VoucherCharge filter ($.ChargeCode != null and ( $.ChargeLevelEnumVal == 'CHL_CONDITION' or ($.ChargeLevelEnumVal=='CHL_OPTION' and $.ChargeCode=='AJUSTE_FLETE')) ) map ((item, index) -> 
+     {
+
+         "charge_id":item.SystemChargeDetailID,
+         "carrier_code":carrier_code,
+         "load":item.SystemLoadID,
+         "charge_code":item.ChargeCode,
+         "charged_amount":item.ChargedAmount,
+         "currency_code":item.OriginalCurrencyCode,
+         "PrePurcjasedFlag":item.PrePurchasedFlag,
+         "charge_level":item.ChargeLevelEnumVal,
+         "type_amount":if ( (item.ChargedAmount as Number) > 0)   "positive" else "negative"
+
+     })
+         
+      			
+ 	}
+
+ )
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<foreach doc:name="By each Freight Bill Number" doc:id="d91b5f29-9dfa-4769-ab70-2c8b00c37ece" collection="#[payload.freight_bill_numbers.*freight_bill]">
+			<choice doc:name="IS Carrier Interco??" doc:id="74a68b26-d736-4b40-a262-d3d2e1bbeaac" >
+				<when expression='#[!(payload.carrier_code default "" startsWith("MX")) and (sizeOf(payload.transaction) default 0) &gt; 0]'>
+					<set-variable value="#[payload.transaction.charge_id]" doc:name="Set Variable" doc:id="dff2fabe-5b4a-46e1-bffd-62185d5b59b1" variableName="systemGLTransactionIdArray" />
+					<set-variable value="#[payload]" doc:name="Set Variable" doc:id="cbe6487d-0ce7-4046-b9b5-dc0fdce1bb39" variableName="FreightBillMessage" />
+					<logger level="INFO" doc:name="SystemLoadID" doc:id="89365080-ef54-4a12-afd9-800b5c8ce55c" message='#["system Load to OC " ++  (payload.transaction[0].load default "") ++ "-" ++( payload.carrier_code default "")]' />
+					<flow-ref doc:name="Call Carrier Converter" doc:id="8e20f181-f637-4f66-b6ce-49c42e387fcf" name="carrierConverter_v2" />
+					<traxion-s-logger:logger-traxion messageType="JSON" doc:name="Save TMS RS" doc:id="49044724-15ae-4f41-a44d-1981853c3898" config-ref="Traxion_s_logger_Config" activityName="Purchase-Order-TMS_RS" destinationName="${jms.queue.commons.logs}" writeInLog="${traxion.settings.logs.write}">
+				<traxion-s-logger:input-parameters>
+					<traxion-s-logger:input-parameter key="date" value="#[(now()&gt;&gt;'America/Mexico_City') as String {format: &quot;y-MM-dd&quot;}]" />
+					<traxion-s-logger:input-parameter key="reference3" value='#[vars.header_load.Load.centro_beneficios default ""]' />
+					<traxion-s-logger:input-parameter key="message_type" value="TMS Purchase Order" />
+					<traxion-s-logger:input-parameter key="reference1" value='#[payload.carrier_code default ""]' />
+					<traxion-s-logger:input-parameter key="source" value="Purchase Order" />
+					<traxion-s-logger:input-parameter key="id" value='#[vars.header_load.Load.system_load_id default ""]' />
+					<traxion-s-logger:input-parameter key="reference2" value="#[correlationId]" />
+				</traxion-s-logger:input-parameters>
+			</traxion-s-logger:logger-traxion>
+					<flow-ref doc:name="Call material converter" doc:id="4e0a20ad-772d-48a7-9124-6278b8a82141" name="orchestrator-post-purchaseorder_v2-material_converter" />
+					<choice doc:name="Choice" doc:id="b013744b-1512-4a3d-b416-693d0e5dd3e3">
+										<when expression='#[vars.header_load.Load.division_code == "CTL" and  vars.relatedShipment.Shipment.CreatedDateTime as Date &gt; ( p("temp.avior.golive") as Date{format:"yyyy-MM-dd"})]'>
+					<ee:transform doc:name="Create Purchase order Request" doc:id="5ea4e221-c5c3-4efc-8d30-ad95b010b5c9" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+import * from dw::core::Strings
+import withMaxSize from dw::core::Strings
+fun formatdate(d: DateTime) = d as String {
+       format: "yyyyMMdd"
+}
+
+
+var condPrecio  = payload.transaction reduce (val, acc = 0) ->
+(
+       if(val.type_amount == 'negative') (((val.charged_amount) as Number) + acc) else acc
+)
+       
+var filtroAnticipo ="ANTICIPO"
+var filtroAnticipoMan ="AP_ADD_ANTICIPO"
+---
+{
+       IM_COMP_CODE: "GS00",
+       IM_DOC_TYPE: "ZTRA",
+       IM_CREAT_DATE: formatdate(now()>>'America/Mexico_City') default "",
+       IM_CREATED_BY: vars.header_load.Load.user_id default "",
+       IM_VENDOR: vars.carrierCode_converter[0], // Primero se utiliza de del convertidor, si no esta la que tenemos en el payload
+       IM_PURCH_ORG: "1100",
+       IM_PUR_GROUP: "116",
+       IM_CURRENCY: payload.transaction[0].currency_code,
+       IM_DOC_DATE: formatdate(now()>>'America/Mexico_City') default "",
+       IM_IHREZ: (vars.header_load.Load.system_load_id default "") ++ "-" ++ if ((vars.carrierCode_converter[0] default "") contains "MXS") vars.carrierCode_converter[0] default "" else vars.carrierCode_converter[0][3 to 9] default "", // Aqui antes tenia el numero de FreightBill
+       //IM_IHREZ: vars.header_load.Load.load_manual default "" ++ "-" ++ (random() * 1000) as  String {format: "0"} ,
+       //IM_BELNR: vars.relatedShipment.Shipment.ReferenceNumber1 default "", // Aqui va el numero a cancelar de SAP Provision
+       //IM_BELNR: if(p("purchase.refnum")== "prd") (vars.saveLoad.Load.ReferenceNumber1 default "") else (vars.saveLoad.Load.ReferenceNumber4 default ""),
+       IM_BELNR: "",
+       IM_GJAHR: "2022",
+       IM_POTEXTHEADER: vars.header_load.Load.system_load_id default "",
+       IM_COND_VALUE:  "" ++ (condPrecio default "0") * -1,
+       IM_IT_ITEM: payload.transaction filter($.type_amount == 'positive') map (item,index)->  {
+             IM_ITEM: leftPad ((index +1)*10,5,0),
+             IM_ADRN2: p("purchaseorder.imadrn2"),
+             IM_SHORT_TEXT: vars.material_text_converter default "",
+             IM_MATERIAL: vars.material_converted default "",
+             IM_PLANT: "1101",
+             IM_QUANTITY: "1.000",
+             IM_PO_UNIT: "SER",
+             IM_NET_PRICE: item.charged_amount,
+             IM_TAX_CODE: "W1",
+             IM_ACCTASSCAT: "K",
+             IM_FUND: "",
+             IM_FUNDS_CTR: "",
+             IM_DELIVERY_DATE: formatdate(now()>>'America/Mexico_City') default "",
+             IM_COSTCENTER: vars.header_load.Load.centro_beneficios default "",
+             //IM_COSTCENTER: "TT" ++ if((vars.relatedShipment.Shipment.ProfitCenterCode default "")=="TXLM") "010101" else (vars.relatedShipment.Shipment.ProfitCenterCode default ""), // Se tiene que traer de la consulta de shipment
+             IM_EAN11: item.load,
+             IM_POTEXTITEM: item.charge_id,
+             IM_EM_ITEM_TEXT: "Load:" ++ (item.load default "") ++ " Cliente:" ++ (vars.header_load.customer_code default ""),
+       },
+       "EX_RETURN": {
+    "EX_ID_ORDEN_COMPRA": "",
+    "EX_STATUS": "",
+    "EX_IT_MENSAJE": [
+      {
+        "EX_ID_MSG": "",
+        "EX_DESC": ""
+      }
+    ]
+  }
+}
+]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</when>
+						<when expression="#[1==2]">
+							<ee:transform doc:name="Transform Message" doc:id="a6ea3683-eef4-4d46-9b91-f2a3c0abadcb" >
+								<ee:message >
+									<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+import * from dw::core::Strings
+import withMaxSize from dw::core::Strings
+fun formatdate(d: DateTime) = d as String {
+       format: "yyyyMMdd"
+}
+
+
+var condPrecio  = payload.transaction reduce (val, acc = 0) ->
+(
+       if(val.type_amount == 'negative') (((val.charged_amount) as Number) + acc) else acc
+)
+       
+var filtroAnticipo ="ANTICIPO"
+var filtroAnticipoMan ="AP_ADD_ANTICIPO"
+---
+{
+       IM_COMP_CODE: "TL02",
+       IM_DOC_TYPE: "ZTRA",
+       IM_CREAT_DATE: formatdate(now()>>'America/Mexico_City') default "",
+       IM_CREATED_BY: vars.header_load.Load.user_id default "",
+       IM_VENDOR: vars.carrierCode_converter[0], // Primero se utiliza de del convertidor, si no esta la que tenemos en el payload
+       IM_PURCH_ORG: "1820",
+       IM_PUR_GROUP: "113",
+       IM_CURRENCY: payload.transaction[0].currency_code,
+       IM_DOC_DATE: formatdate(now()>>'America/Mexico_City') default "",
+       IM_IHREZ: (vars.header_load.Load.system_load_id default "") ++ "-" ++ if ((vars.carrierCode_converter[0] default "") contains "MXS") vars.carrierCode_converter[0] default "" else vars.carrierCode_converter[0][3 to 9] default "", // Aqui antes tenia el numero de FreightBill
+       //IM_IHREZ: vars.header_load.Load.load_manual default "" ++ "-" ++ (random() * 1000) as  String {format: "0"} ,
+       //IM_BELNR: vars.relatedShipment.Shipment.ReferenceNumber1 default "", // Aqui va el numero a cancelar de SAP Provision
+       //IM_BELNR: if(p("purchase.refnum")== "prd") (vars.saveLoad.Load.ReferenceNumber1 default "") else (vars.saveLoad.Load.ReferenceNumber4 default ""),
+       IM_BELNR: "",
+       IM_GJAHR: "2022",
+       IM_POTEXTHEADER: vars.header_load.Load.system_load_id default "",
+       IM_COND_VALUE:  "" ++ (condPrecio default "0") * -1,
+       IM_IT_ITEM: payload.transaction filter($.type_amount == 'positive') map (item,index)->  {
+             IM_ITEM: leftPad ((index +1)*10,5,0),
+             IM_ADRN2: p("purchaseorder.imadrn2"),
+             IM_SHORT_TEXT: vars.material_text_converter ++ " Load " ++ (vars.header_load.Load.system_load_id  default ""),
+             IM_MATERIAL: vars.material_converted default "",
+             IM_PLANT: "1803",
+             IM_QUANTITY: "1.000",
+             IM_PO_UNIT: "SER",
+             IM_NET_PRICE: item.charged_amount,
+             IM_TAX_CODE: "US",
+             IM_ACCTASSCAT: "K",
+             IM_FUND: "",
+             IM_FUNDS_CTR: "",
+             IM_DELIVERY_DATE: formatdate(now()>>'America/Mexico_City') default "",
+             IM_COSTCENTER: vars.header_load.Load.centro_beneficios default "",
+             //IM_COSTCENTER: "TT" ++ if((vars.relatedShipment.Shipment.ProfitCenterCode default "")=="TXLM") "010101" else (vars.relatedShipment.Shipment.ProfitCenterCode default ""), // Se tiene que traer de la consulta de shipment
+             IM_EAN11: item.load,
+             IM_POTEXTITEM: item.charge_id,
+             IM_EM_ITEM_TEXT: "Load:" ++ (item.load default "") ++ " Cliente:" ++ (vars.header_load.customer_code default ""),
+       },
+       "EX_RETURN": {
+    "EX_ID_ORDEN_COMPRA": "",
+    "EX_STATUS": "",
+    "EX_IT_MENSAJE": [
+      {
+        "EX_ID_MSG": "",
+        "EX_DESC": ""
+      }
+    ]
+  }
+}
+]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+							<set-variable value="#[true]" doc:name="Set true TXL USA" doc:id="45071094-87e1-495d-ba34-edebf42a8c88" variableName="is_txl_usa"/>
+						</when>
+						<otherwise >
+							<ee:transform doc:name="Create Purchase order Request" doc:id="4d283bcb-dc99-4266-908a-fda978e17ef8">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+import * from dw::core::Strings
+import withMaxSize from dw::core::Strings
+fun formatdate(d: DateTime) = d as String {
+       format: "yyyyMMdd"
+}
+
+
+var condPrecio  = payload.transaction reduce (val, acc = 0) ->
+(
+       if(val.type_amount == 'negative') (((val.charged_amount) as Number) + acc) else acc
+)
+       
+var filtroAnticipo ="ANTICIPO"
+var filtroAnticipoMan ="AP_ADD_ANTICIPO"
+---
+{
+	
+       IM_COMP_CODE: "TL01",
+       IM_DOC_TYPE: "ZTRA",
+       IM_CREAT_DATE: formatdate(now()>>'America/Mexico_City') default "",
+       IM_CREATED_BY: vars.header_load.Load.user_id default "",
+       IM_VENDOR: vars.carrierCode_converter[0], // Primero se utiliza de del convertidor, si no esta la que tenemos en el payload
+       IM_PURCH_ORG: "1810",
+       IM_PUR_GROUP: "113",
+       IM_CURRENCY: payload.transaction[0].currency_code,
+       IM_DOC_DATE: formatdate(now()>>'America/Mexico_City') default "",
+       IM_IHREZ: (vars.header_load.Load.system_load_id default "") ++ "-" ++ ( if ((vars.carrierCode_converter[0] default "") contains "MXS") vars.carrierCode_converter[0] default "" else ( (vars.carrierCode_converter[0][5 to 9] default "") ++ payload.type_transaction default "" ))  , 
+       //IM_IHREZ: vars.header_load.Load.load_manual default "" ++ "-" ++ (random() * 1000) as  String {format: "0"} ,
+       //IM_BELNR: vars.relatedShipment.Shipment.ReferenceNumber1 default "", // Aqui va el numero a cancelar de SAP Provision
+       //IM_BELNR: if(p("purchase.refnum")== "prd") (vars.saveLoad.Load.ReferenceNumber1 default "") else (vars.saveLoad.Load.ReferenceNumber4 default ""),
+       IM_BELNR: "",
+       IM_GJAHR: "2022",
+       IM_POTEXTHEADER: vars.header_load.Load.system_load_id default "",
+       IM_COND_VALUE:  "" ++ (condPrecio default "0") * -1,
+       IM_IT_ITEM: payload.transaction filter($.type_amount == 'positive') map (item,index)->  {
+             IM_ITEM: leftPad ((index +1)*10,5,0),
+             IM_ADRN2: p("purchaseorder.imadrn2"),
+             IM_SHORT_TEXT: vars.material_text_converter ++ " Load " ++ (vars.header_load.Load.system_load_id  default ""),
+             IM_MATERIAL: vars.material_converted default "",
+             IM_PLANT: "1802",
+             IM_QUANTITY: "1.000",
+             IM_PO_UNIT: "SER",
+             IM_NET_PRICE: item.charged_amount,
+             IM_TAX_CODE: "W1",
+             IM_ACCTASSCAT: "K",
+             IM_FUND: "",
+             IM_FUNDS_CTR: "",
+             IM_DELIVERY_DATE: formatdate(now()>>'America/Mexico_City') default "",
+             IM_COSTCENTER: vars.header_load.Load.centro_beneficios default "",
+             //IM_COSTCENTER: "TT" ++ if((vars.relatedShipment.Shipment.ProfitCenterCode default "")=="TXLM") "010101" else (vars.relatedShipment.Shipment.ProfitCenterCode default ""), // Se tiene que traer de la consulta de shipment
+             IM_EAN11: item.load,
+             IM_POTEXTITEM: item.charge_id,
+             IM_EM_ITEM_TEXT: "Load:" ++ (item.load default "") ++ " Cliente:" ++ (vars.header_load.customer_code default ""),
+       },
+       "EX_RETURN": {
+    "EX_ID_ORDEN_COMPRA": "",
+    "EX_STATUS": "",
+    "EX_IT_MENSAJE": [
+      {
+        "EX_ID_MSG": "",
+        "EX_DESC": ""
+      }
+    ]
+  }
+}
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+						</otherwise>
+					</choice>
+					<traxion-s-logger:logger-traxion messageType="JSON" doc:name="Save SAP RQ" doc:id="2d64ce5b-6b99-4010-86ed-6f4dc2993010" config-ref="Traxion_s_logger_Config" activityName="Purchase-Order-SAP_RQ" destinationName="${jms.queue.commons.logs}" writeInLog="${traxion.settings.logs.write}">
+				<traxion-s-logger:input-parameters>
+					<traxion-s-logger:input-parameter key="date" value="#[(now()&gt;&gt;'America/Mexico_City') as String {format: &quot;y-MM-dd&quot;}]" />
+					<traxion-s-logger:input-parameter key="reference3" value='#[vars.header_load.Load.centro_beneficios default ""]' />
+					<traxion-s-logger:input-parameter key="message_type" value="Request" />
+					<traxion-s-logger:input-parameter key="reference1" value='#[vars.FreightBillMessage.type_transaction default ""]' />
+					<traxion-s-logger:input-parameter key="source" value="Purchase Order" />
+					<traxion-s-logger:input-parameter key="id" value='#[vars.header_load.Load.system_load_id default ""]' />
+					<traxion-s-logger:input-parameter key="reference2" value="#[correlationId]" />
+				</traxion-s-logger:input-parameters>
+			</traxion-s-logger:logger-traxion>
+					<flow-ref doc:name="call clients-system-sap-generatePurchaseOrder" doc:id="8baf85e8-a601-4ba1-be63-fca62c182dde" name="clients-system-sap-purchaseorder" />
+					<traxion-s-logger:logger-traxion messageType="JSON" doc:name="Save SAP RS" doc:id="0077a906-b62d-4a29-ac01-7c4d3fb8034b" config-ref="Traxion_s_logger_Config" activityName="Purchase-Order-SAP_RQ" destinationName="${jms.queue.commons.logs}" writeInLog="${traxion.settings.logs.write}">
+				<traxion-s-logger:input-parameters>
+					<traxion-s-logger:input-parameter key="date" value="#[(now()&gt;&gt;'America/Mexico_City') as String {format: &quot;y-MM-dd&quot;}]" />
+					<traxion-s-logger:input-parameter key="reference3" value='#[vars.header_load.Load.centro_beneficios default ""]' />
+					<traxion-s-logger:input-parameter key="message_type" value="Response" />
+					<traxion-s-logger:input-parameter key="reference1" value='#[vars.FreightBillMessage.type_transaction default ""]' />
+					<traxion-s-logger:input-parameter key="source" value="Purchase Order" />
+					<traxion-s-logger:input-parameter key="id" value='#[vars.header_load.Load.system_load_id default ""]' />
+					<traxion-s-logger:input-parameter key="reference2" value="#[correlationId]" />
+				</traxion-s-logger:input-parameters>
+			</traxion-s-logger:logger-traxion>
+					<flow-ref doc:name="orchestrator-post-purchase-order-validator-ex-status" doc:id="b1672262-cbad-4f67-9f67-4a1656ff43fe" name="orchestrator-post-purchase-order-validator-ex-status" />
+				</when>
+			</choice>
+		</foreach>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="5cb709e0-cd3a-448c-bf42-ea7518261ce8" type="ANY">
+				<ee:transform doc:name="Transform Message" doc:id="d6da010d-4ebb-4dd5-9554-5079ff01c804">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+	error: error.description
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="httpStatus"><![CDATA[400]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<sub-flow name="orchestrator-post-purchase-order-validator-ex-status" doc:id="b46342ef-1482-48a0-b56c-8b75cc009b86" >
+		<choice doc:name="Choice" doc:id="819890b5-7670-4d45-ab2c-8bc9dc255062">
+			<when expression='#[payload.d.EX_RETURN.EX_STATUS == "S"]'>
+				<logger level="INFO" doc:name="Logger" doc:id="bc5495f6-3820-4aff-a861-4369eec5067d" message="#['\n'] ********** El valor de ExStatus es: #[payload.d.EX_RETURN.EX_STATUS] **********  #['\n']" />
+				<ee:transform doc:name="Transform Message" doc:id="ede33fca-3667-4a81-a05f-a8391a49b994">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"EntityType": "Load",
+	"ReferenceNumberActionEnumVal": "AT_ADD",
+	"ReferenceNumberCategoryEnumVal": "RNC_LD_LEG",
+	"ReferenceNumberEntityKey": vars.header_load.Load.system_load_id default "",
+	"ReferenceNumberTypeCode": "Financials_GL",
+	"ReferenceNumber":( vars.responsesap.d.EX_RETURN.EX_ID_ORDEN_COMPRA default "") ++ "," ++ (((vars.responsesap.d.EX_RETURN.EX_IT_MENSAJE.results filter ($.EX_ID_MSG == 'MGO' ))[0].EX_DESC ) default ""),
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<flow-ref doc:name="Call to clients-system-tms-update-referenceNumber" doc:id="a9458d4e-1ad3-4cbe-953c-9a853b365135" name="clients-system-tms-update-referenceNumber" />
+				<set-variable value="#[payload.body.processMaintainEntityReferenceNumberResponse.ResponseHeader.CompletedSuccessfully]" doc:name="Set Variable" doc:id="437378cf-cf0d-43aa-89c5-7042e39b0e63" variableName="statuscommit" />
+				<ee:transform doc:name="Transform Message" doc:id="bf45ce21-65ff-402f-b3ce-f5e55accda4f" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"loadId": vars.header_load.Load.system_load_id default "",
+	"carrierDescription": vars.header_load.Load.carrier_code default "",
+	"carrierCode": vars.header_load.Load.carrier_code default "",
+	"profitCenter":vars.header_load.Load.centro_beneficios default "",
+	"monto": sum (vars.FreightBillMessage.transaction.charged_amount ) ,
+	"montoNegativo": "",
+	"moneda": vars.header_load.Load.currency_code default "",
+	"total": "",
+	"numeroDocSap": vars.responsesap.d.EX_RETURN.EX_ID_ORDEN_COMPRA default "",
+	"numeroDocMigo": (vars.responsesap.d.EX_RETURN.EX_IT_MENSAJE.results filter ($.EX_ID_MSG == 'MGO' ))[0].EX_DESC,
+	"statusSap": vars.responsesap.d.EX_RETURN.EX_STATUS default "",
+	"statusCommit": vars.statuscommit default "",
+	"sap_socity": vars.sap_socity default ""
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<traxion-s-logger:logger-traxion messageType="JSON" doc:name="Logger traxion SAP Registro" doc:id="7ddf4eb1-7408-4b70-ae19-3aa702f105d9" config-ref="Traxion_s_logger_Config" activityName="Purchase-Order-SAP_Record" destinationName="${jms.queue.proccess.sap.logger}" writeInLog="${traxion.settings.logs.write}">
+					<traxion-s-logger:input-parameters>
+						<traxion-s-logger:input-parameter key="correlation_id" value="#[correlationId]" />
+						<traxion-s-logger:input-parameter key="type" value="DB" />
+					</traxion-s-logger:input-parameters>
+				</traxion-s-logger:logger-traxion>
+				<traxion-s-logger:logger-traxion doc:name="Sent notification to carrier" doc:id="d8f15526-c7ed-4c55-aa50-7fbe80769296" config-ref="Traxion_s_logger_Config" destinationName="${jms.queue.proccess.sap.logger}" activityName="Purchase-Order-SAP_Record_carrierNotification" messageType="JSON" writeInLog="${traxion.settings.logs.write}">
+					<traxion-s-logger:input-parameters >
+						<traxion-s-logger:input-parameter key="correlation_id" value="#[correlationId]" />
+						<traxion-s-logger:input-parameter key="type" value="notify"/>
+					</traxion-s-logger:input-parameters>
+				</traxion-s-logger:logger-traxion>
+				<flow-ref doc:name="call orchestrator-post-cancel_provision" doc:id="55851525-420c-4ea4-a8ae-81b7042b0887" name="orchestrator-post-cancel_provision" />
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="Logger" doc:id="86488c8a-bd7e-4f3c-ba24-aee88bb974a1" message="#['\n'] ********** El valor de ExStatus es: #[payload.d.EX_RETURN.EX_STATUS] **********  #['\n']" />
+				<ee:transform doc:name="Transform Message" doc:id="a2ce7a48-8578-4d6e-972c-114cf26a1d9e">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	
+	"loadId": vars.header_load.Load.system_load_id default "",
+	"carrierDescription": vars.header_load.Load.carrier_code default "",
+	"carrierCode": vars.header_load.Load.carrier_code default "",
+	"profitCenter":vars.header_load.Load.centro_beneficios default "",
+	"monto": sum  (vars.FreightBillMessage.transaction.charged_amount default 0  ) default 0 ,
+	"montoNegativo": "",
+	"moneda": vars.header_load.Load.currency_code default "",
+	"total": "",
+	"numeroDocSap": vars.responsesap.d.EX_RETURN.EX_ID_ORDEN_COMPRA default "",
+	"numeroDocMigo": (vars.responsesap.d.EX_RETURN.EX_IT_MENSAJE.results filter ($.EX_ID_MSG == 'MGO' ))[0].EX_DESC default "",
+	"statusSap": "E",
+	"statusCommit": "",
+	"sap_socity": vars.sap_socity default "",
+	errors: payload.d.EX_RETURN.EX_IT_MENSAJE.results map ( result , indexOfResult ) -> {
+		code: result.EX_ID_MSG,
+		message: result.EX_DESC
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="69ae2a0c-0111-40d8-8fea-c02b0cf92cc0" message="*********** Payload para Log #[payload]" />
+				<traxion-s-logger:logger-traxion messageType="JSON" doc:name="Logger traxion SAP Registro" doc:id="a1cc0d3c-3314-470e-84ff-110518bbfe12" config-ref="Traxion_s_logger_Config" activityName="Purchase-Order-SAP_Record_E" destinationName="${jms.queue.proccess.sap.logger}" writeInLog="${traxion.settings.logs.write}">
+					<traxion-s-logger:input-parameters >
+						<traxion-s-logger:input-parameter key="correlation_id" value="#[correlationId]" />
+						<traxion-s-logger:input-parameter key="type" value="DB" />
+					</traxion-s-logger:input-parameters>
+				</traxion-s-logger:logger-traxion>
+				<traxion-s-logger:logger-traxion messageType="JSON" doc:name="Logger traxion SAP Registro Notify" doc:id="8bdcabea-555b-4f18-99f0-8f02f67f882d" config-ref="Traxion_s_logger_Config" activityName="Purchase-Order-SAP_Record_E" destinationName="${jms.queue.proccess.sap.logger}" writeInLog="${traxion.settings.logs.write}">
+					<traxion-s-logger:input-parameters >
+						<traxion-s-logger:input-parameter key="correlation_id" value="#[correlationId]" />
+						<traxion-s-logger:input-parameter key="type" value="notify" />
+					</traxion-s-logger:input-parameters>
+				</traxion-s-logger:logger-traxion>
+			</otherwise>
+		</choice>
+	</sub-flow>
+	<sub-flow name="carrierConverter_v2" doc:id="7fa00708-ebc4-4d5b-b51c-3e20cae7aa10" >
+		<set-variable value="#[payload]" doc:name="Set Variable" doc:id="5cf400b7-468a-4065-9ff0-91e262a8a53e" variableName="FreightBillMessage"/>
+		<set-variable value="carrierConverter" doc:name="Set Variable" doc:id="e1a4080c-50ca-42a5-b65b-14bb37eaa7d2" variableName="entityConverter"/>
+		<set-variable value="#[payload.carrier_code]" doc:name="Set Variable" doc:id="2919f7bd-96ba-493b-bb01-05b5e598b678" variableName="serch_code"/>
+		<flow-ref doc:name="Call system-db-catalog" doc:id="44941db0-f2a9-4517-be33-9d0da82ef5a7" name="clients-system-db-catalog"/>
+		<set-variable value="#[if (vars.ClientCode == null or vars.ClientCode == '') vars.serch_code else vars.ClientCode]" doc:name="Set Variable" doc:id="6e3de140-0135-4cc0-a901-d1c776219eb9" variableName="carrierCode_converter"/>
+		<set-payload value="#[vars.FreightBillMessage]" doc:name="Set Payload" doc:id="eb8f57f4-e961-4d85-a9fb-7c288adf8537" />
+	</sub-flow>
+	<flow name="materialConverter_v2" doc:id="f0be0107-9924-46d7-bd0f-39a97a8e921f" >
+		<set-variable value="#[payload]" doc:name="Set Variable" doc:id="3d6df93f-b0ed-4896-ae9d-3eb03f02dc08" variableName="before_material_payload"/>
+		<ee:transform doc:name="Transform Message" doc:id="4cba5275-45d0-4708-8494-c7044866c8f0" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+import modules::myGlobalFunctions as globalFunctions
+
+//var intercos=["MXS0001","MXS0002","MXS0003","MXS0008","MXS0012","MXS0013","MXS0014","MXS0019","MXS0031","MXS0036","MXS0042","MXS0048","MXS0051","MXS0052","MXS0053","MXS0055","MXS0059","MXS0058"]
+---
+{
+	"entityConverter": globalFunctions::isIntercoToMaterial(vars.serch_code)
+} ]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+			</ee:variables>
+		</ee:transform>
+		<set-variable value="#[payload.entityConverter]" doc:name="Set Variable" doc:id="882c7970-b557-41d4-9630-324375e22853" variableName="entityConverter"/>
+		<set-variable value='#[if((vars.material.material)== null) ("FLAT") else (vars.material.material)]' doc:name="Set Variable" doc:id="65cf86c4-a443-4abf-a96b-dd4710ee2dbe" variableName="serch_code"/>
+		<flow-ref doc:name="Call system-db-catalog" doc:id="25947782-eb2e-4816-8494-ce585b552e49" name="clients-system-db-catalog"/>
+		<ee:transform doc:name="Transform Message" doc:id="961ee584-7ea3-4d6f-b9c6-c7059fe6d585" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload.value_result]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="4755ac4a-83dd-43ce-befb-b9b0b4afbd73" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="material_converted" ><![CDATA[%dw 2.0
+output application/java
+---
+payload reduce
+payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<set-payload value="#[vars.before_material_payload]" doc:name="Set Payload" doc:id="cda94edd-200c-4f96-ab58-595eb44a6a0f" />
+		<flow-ref doc:name="Call material converter text" doc:id="50eabc5f-8689-4b28-9c76-604ef51f78e1" name="materialConverterText_v2"/>
+	</flow>
+	<flow name="materialConverterText_v2" doc:id="afa750c4-3e57-42e6-849c-03d57cc1bd95" >
+		<set-variable value="#[payload]" doc:name="Set Variable" doc:id="dab1cbde-0c53-4787-a7c5-3ee2c923bc79" variableName="before_material_text_payload"/>
+		<ee:transform doc:name="Transform Message" doc:id="f69689c7-9f0b-4d29-b599-c4ba462529f6">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+
+import modules::myGlobalFunctions as globalFunctions
+
+//var intercos=["MXS0001","MXS0002","MXS0003","MXS0008","MXS0012","MXS0013","MXS0014","MXS0019","MXS0031","MXS0036","MXS0042","MXS0048","MXS0051","MXS0052","MXS0053","MXS0055","MXS0059","MXS0058"]
+---
+{
+	"entityConverter": globalFunctions::isIntercoToMaterialText(vars.serch_code)
+} ]]></ee:set-payload>
+			</ee:message>
+			<ee:variables />
+		</ee:transform>
+		<set-variable value="#[payload.entityConverter]" doc:name="Set Variable" doc:id="00048c3e-fadb-421a-933b-8f7dace64215" variableName="entityConverter" />
+		<set-variable value='#[if((vars.text.text)== null) ("FLAT") else (vars.text.text)]' doc:name="Set Variable" doc:id="af8f7eb8-c274-44f9-8b4a-0b369020fa40" variableName="serch_code"/>
+		<flow-ref doc:name="Call system-db-catalog" doc:id="73a0a08e-d31a-4652-83fa-87555e96f866" name="clients-system-db-catalog" />
+		<ee:transform doc:name="Transform Message" doc:id="bf8d87b7-77c4-4af5-a21a-bafe689651f4" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload.value_result]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="7d4e43f7-8ab3-4817-9f98-55b470c455a0" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="material_text_converter" ><![CDATA[%dw 2.0
+output application/java
+---
+payload reduce
+payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<set-payload value="#[vars.before_material_text_payload]" doc:name="Set Payload" doc:id="af937df9-4593-43e9-8703-0385ef7da6d9" />
+	</flow>
+	
+	<sub-flow name="orchestrator-post-purchaseorder_v2-material_converter" doc:id="e8d91e58-e514-4555-9d62-0ea5ce3a4d95" >
+		<set-variable value="#[payload]" doc:name="Set Variable" doc:id="79f751a3-aa71-4952-aec7-e4312b5e0ba5" variableName="before_material_payload" />
+		<set-variable value="material_cost_converter" doc:name="material_type_converter" doc:id="504dad62-a082-4cb3-add8-2a8113109064" variableName="material_type_converter"/>
+		<set-variable value="#[vars.header_load.Load.logistics_group]" doc:name="logistics_group_code" doc:id="5ce97ac8-4516-4e65-9b9d-d8ee2b3f3b05" variableName="logistics_group_code"/>
+		<set-variable value='#[if((vars.material.material)== null) ("FLAT") else (vars.material.material)]' doc:name="charge_code" doc:id="f35786d3-6ce5-4e17-814c-2b160041a7b3" variableName="charge_code"/>
+		<ee:transform doc:name="Transform Message" doc:id="1f8f5ef9-dc79-4b9b-b6a9-a97ed66c175e" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="transaction_type" ><![CDATA[%dw 2.0
+output application/json
+
+var intercos=["MXS0001","MXS0002","MXS0003","MXS0008","MXS0012","MXS0013","MXS0014","MXS0019","MXS0031","MXS0036","MXS0042","MXS0048","MXS0051","MXS0052","MXS0053","MXS0055","MXS0059","MXS0058"]
+---
+
+ if(intercos contains vars.header_load.carrier_code) "interco" else "tercero"
+ ]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="Flow Reference" doc:id="aac0c586-a10c-4017-9959-1df85be5203e" name="clients-generic-xconfiguration-material_income_converter"/>
+		<set-variable value="#[payload.output1[0]]" doc:name="material_converted" doc:id="dc4dc3a3-f3d1-455c-b925-802da7e47ded" variableName="material_converted"/>
+		<set-variable value="#[payload.output2[0]]" doc:name="material_text_converter" doc:id="de593119-9b00-45c8-a4ef-8785fa4aabf3" variableName="material_text_converter"/>
+		<set-payload value="#[vars.before_material_payload]" doc:name="Set Payload before_material_payload" doc:id="8e2c9cb1-1586-4350-a171-ac1ec7f7a9a2" />
+	</sub-flow>
+	<sub-flow name="orchestrator-post-cancel_provision" doc:id="74fecefa-5b51-46a8-9d15-cb9be20d189d" >
+		<choice doc:name="Choice" doc:id="9be187b2-e069-4108-bdcc-1535b1d4856a" >
+			<when expression="#[vars.is_txl_usa default false]">
+				<ee:transform doc:name="Transform Message" doc:id="1ad3d74d-f08c-4826-b3dd-f5377ec5e5e1" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"stk_number":vars.header_load.Load.system_load_id default "",
+	"society":"TL02",
+	"document_number":(vars.header_load.Load.provision_financials default "") replace ',' with(""),
+	"year_date":"2022"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="217903c3-c930-41d9-b163-3195d2aa8cd0">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"stk_number":vars.header_load.Load.system_load_id default "",
+	"society":"TL01",
+	"document_number": ((vars.header_load.Load.provision_financials default "") splitBy(","))[0] ,
+	"year_date":(((vars.header_load.Load.provision_financials default "") splitBy(","))[1]) default "2022"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</otherwise>
+		</choice>
+		<flow-ref doc:name="call clients-system-cancelOrder" doc:id="36d1bd88-2035-45ca-9225-9147b321d17b" name="clients-system-cancelOrder"/>
+	</sub-flow>
+	<sub-flow name="orchestrator-post-purchaseorder-error-continue" doc:id="436137eb-3198-4178-ac57-3d31e12a8f20" >
+		<logger level="INFO" doc:name="Response SAP" doc:id="21dbcb5d-8aca-46b3-ac65-cf6cbaa8b50c" message="#['\n\n\n\n'] ********************* Response SAP ********************* #['\n\n\n\n'] #[payload]" />
+		<flow-ref doc:name="Call to clients-experience-commons-logs-purchaseorder-response" doc:id="f71f0dde-c46c-406f-af83-7f1a97dd8f07" name="clients-experience-commons-logs-purchaseorder-response"/>
+		<set-payload value="#[vars.responsesap]" doc:name="Set Payload" doc:id="c10169ce-bc13-499d-8d2b-ae91832f3881" />
+		<flow-ref doc:name="orchestrator-post-purchase-order-validator-ex-status" doc:id="9b7e1098-6345-4546-b0be-a2780fd8399c" name="orchestrator-post-purchase-order-validator-ex-status" />
+	</sub-flow>	
+	<sub-flow name="orchestrator-post-purchase-order-getRelatedShipment" doc:id="2455c4e7-19ea-4e89-9cc2-73460c6fe4df" >
+		<ee:transform doc:name="Set Get Shipment request" doc:id="77b63234-fa2c-442e-94ea-684c6518dccb" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+   "FindEntities":{
+      "Select":{
+         "Name":[
+            "ShipmentNumber",
+            "CurrentShipmentFinancialStatusEnumVal",
+            "SystemLoadID",
+            "CurrencyCode",
+            "CustomerCode",
+            "SystemShipmentID",
+            "ProfitCenterCode",
+            "ReferenceNumber1",
+            "ReferenceNumber2",
+            "ReferenceNumber3",
+            "ReferenceNumber4",
+            "ReferenceNumber5",
+            "ReferenceNumber6",
+            "ReferenceNumber26",
+            "CustomerServiceRepresentativeCode",
+            "CreatedDateTime"
+            
+          
+         ]
+         
+      },
+         "Filter":[
+         {
+            "Name":"SystemShipmentID",
+            "Op":"Eq",
+            "Value": vars.header_load.Load.shipment_id
+                     }
+
+      ]
+   }
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="Call_shipment_by_shipmentId" doc:id="c0a5b394-8337-49ec-b352-26917018957f" name="clients-system-tms-findentitiesShipment"/>
+		<set-variable value="#[payload.findEntitiesResponse.body.findEntitiesResponse.Entity]" doc:name="Save Related Shipment" doc:id="58f575b5-e63b-457c-b0ed-17104923a6f7" variableName="relatedShipment" />
+		<ee:transform doc:name="Transform Message" doc:id="a5844a54-8723-4a92-9ffb-3b8a7c1cda2d" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="header_load" ><![CDATA[%dw 2.0
+import * from dw::util::Values
+output application/json
+---
+vars.header_load update ["Load","centro_beneficios"] with (if((vars.relatedShipment.Shipment.ReferenceNumber26 default "") == '' ) vars.relatedShipment.Shipment.ProfitCenterCode else vars.relatedShipment.Shipment.ReferenceNumber26)
+
+
+]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<set-payload value="#[vars.header_load]" doc:name="Set Payload" doc:id="f53e4551-53bb-4350-ad3f-fc581946768d" />
+	</sub-flow>	
+</mule>

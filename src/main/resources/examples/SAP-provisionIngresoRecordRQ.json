@@ -1,0 +1,24 @@
+{
+	"shipmentId":  "12323",
+	"systemLoadId": "12312",
+	"shipmentNumber": "dasd",
+	"shipmentDescription": "Desc_shp",
+	"profitCenter": "010101",
+	"monto": "1024",
+	"numeroDocSap": "0012431",
+	"statusSap": "E",
+	"statusCommit": "true",
+	"errors":[
+	{
+		"code":"01",
+		"message":"Error"
+	},
+	{
+		"code":"02",
+		"message":"Error 2"
+	}
+
+	]
+	
+	
+}

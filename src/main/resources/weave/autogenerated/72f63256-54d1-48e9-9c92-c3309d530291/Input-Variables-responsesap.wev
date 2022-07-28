@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_72f63256_54d1_48e9_9c92_c3309d530291_Input_Variables_responsesap = Any
+

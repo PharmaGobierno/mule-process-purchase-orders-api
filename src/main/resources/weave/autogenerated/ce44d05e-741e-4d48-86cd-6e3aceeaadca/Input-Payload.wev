@@ -1,0 +1,19 @@
+%dw 2.0
+
+type auto_ce44d05e_741e_4d48_86cd_6e3aceeaadca_Input_Payload = {|
+  Load: {|
+    SystemLoadID: Any, 
+    CurrencyCode: Any, 
+    AdditionalChargesAmount: Any, 
+    CurrentLoadOperationalStatusEnumVal: Any, 
+    ActualChargedAmount: Any, 
+    CarrierCode: Any, 
+    ServiceCode: Any, 
+    CustomerCode: Any, 
+    RatingValidFlag: Any, 
+    NumberOfShipments: Any, 
+    SystemShipmentID: Any, 
+    ReferenceNumber27: Any
+  |}
+|}
+

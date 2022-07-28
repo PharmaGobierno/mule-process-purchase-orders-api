@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:traxion-s-logger="http://www.mulesoft.org/schema/mule/traxion-s-logger" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/traxion-s-logger http://www.mulesoft.org/schema/mule/traxion-s-logger/current/mule-traxion-s-logger.xsd">
+	<http:request-config name="client-system-tms-connection-HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="8c07d10a-858e-4f5a-b276-a1ab891d081d" responseTimeout="1200000">
+		<http:request-connection host="${client.system.tmsconnection.http.host}" maxConnections="${client.system-tms-connection.http.max.connections}" connectionIdleTimeout="${client.system-tms-connection.http.connection.idle.timeout}" responseBufferSize="${client.system-tms-connection.http.response.buffer.size}" protocol="HTTPS" tlsContext="TLS_Context" port="443"/>
+		<expiration-policy />
+	</http:request-config>
+	<http:request-config name="client-system-db-catalogHTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="98d45177-7e64-4c6e-9d93-ea54363d83a7" responseTimeout="60000">
+		<http:request-connection host="${client.db.http.host}" port="${client.db.http.port}" maxConnections="${client.db.http.max.connections}" connectionIdleTimeout="${client.db.http.connection.idle.timeout}" responseBufferSize="${client.db.http.response.buffer.size}" protocol="HTTPS"/>
+	</http:request-config>
+	<http:request-config name="client-system-sapHTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="ee6284cd-08ad-481c-8b14-b38a317ffe2b" responseTimeout="60000">
+		<http:request-connection host="${client.system.sap.http.host}" port="${client.system.sap.http.port}" maxConnections="${client.system.sap.http.max.connections}" connectionIdleTimeout="${client.system.sap.http.connection.idle.timeout}" responseBufferSize="${client.system.sap.http.response.buffer.size}" protocol="HTTPS"/>
+	</http:request-config>
+	<http:request-config name="client-system-commons-logs-HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="d3e618b3-1d31-4e25-960c-7ecddc7c8318" responseTimeout="60000">
+		<http:request-connection host="${client.system.commons.logs.http.host}" port="${client.system.commons.logs.http.port}" maxConnections="${client.system.commons.logs.http.max.connections}" connectionIdleTimeout="${client.system.commons.logs.http.connection.idle.timeout}" responseBufferSize="${client.system.commons.logs.http.response.buffer.size}" protocol="HTTPS"/>
+	</http:request-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="5f557eac-8d9c-4150-8bea-b28c5181c290" >
+		<db:generic-connection url="${db.url}" user="${db.user}" driverClassName="software.aws.rds.jdbc.mysql.Driver" password="${db.password}"/>
+	</db:config>
+	<http:request-config name="HTTP_Request_configuration_system_sap_utilitiesBuilder" doc:name="HTTP Request configuration" doc:id="bf820d18-cf7f-4715-8f61-b981f3140fac" sendCorrelationId="ALWAYS" preserveHeadersCase="true">
+		<http:request-connection host="${system.sap.utilities.http.host}" protocol="HTTPS" port="${system.sap.utilities.http.port}"/>
+	</http:request-config>
+	<http:request-config name="client-system-tms-shipment-HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="6a813247-52b5-49ad-8133-9971e60ac7a4" responseTimeout="1200000">
+		<http:request-connection host="${client.tms.shipments.host.tms.shipments}" maxConnections="${client.system-tms-connection.http.max.connections}" connectionIdleTimeout="${client.system-tms-connection.http.connection.idle.timeout}" responseBufferSize="${client.system-tms-connection.http.response.buffer.size}" protocol="HTTPS" tlsContext="TLS_Context" port="443"/>
+		<expiration-policy />
+	</http:request-config>
+</mule>

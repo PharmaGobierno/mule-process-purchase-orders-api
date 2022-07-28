@@ -1,0 +1,67 @@
+<CISDocument>
+	<ApiHeader>
+		<OperationName>addEntity</OperationName>
+	</ApiHeader>
+	<Entity>
+		<Carrier>
+			<CarrierCode>SC423065</CarrierCode>
+			<CarrierDescription>Planta de Concreto</CarrierDescription>
+			<LanguageCode>es</LanguageCode>
+			<CarrierTypeCode>ROAD</CarrierTypeCode>
+			<SCACCode>Default</SCACCode>
+			<CostCenterCode>ELEMENTIA</CostCenterCode>
+			<CarrierAccountNumber>SC423065</CarrierAccountNumber>
+			<APVendorNumber>SC423065</APVendorNumber>
+			<CurrencyCode>MXN</CurrencyCode>
+			<BarcodeTypeCode>39</BarcodeTypeCode>
+			<CarrierInsuranceExpiryDate>9999-12-31T23:59:59</CarrierInsuranceExpiryDate>
+			<CarrierInsuranceAmount>0.01</CarrierInsuranceAmount>
+			<RoutingPrecisionEnumVal>ROP_GEOGRAPHY</RoutingPrecisionEnumVal>
+			<MaximumVariancePercentPositive>0</MaximumVariancePercentPositive>
+			<MaximumVarianceAmountPositive>0</MaximumVarianceAmountPositive>
+			<MaximumVariancePercentNegative>0</MaximumVariancePercentNegative>
+			<MaximumVarianceAmountNegative>0</MaximumVarianceAmountNegative>
+			<ServiceGradeCode/>
+			<LastCarrierFreightBillNumber/>
+			<RestrictedCarrierFlag>FALSE</RestrictedCarrierFlag>
+			<StatusVerificationEnumVal>SV_NULL</StatusVerificationEnumVal>
+			<APVoucherCurrencyEnumVal>AP_VCHRCNCY_TFF_CARRIER</APVoucherCurrencyEnumVal>
+			<RespondToTenderHours>999</RespondToTenderHours>
+			<NonLiveLoadUnloadFlag>FALSE</NonLiveLoadUnloadFlag>
+			<SystemUnitOfMeasureEnumVal>UMS_METRIC</SystemUnitOfMeasureEnumVal>
+			<WeightUnitOfMeasureEnumVal>UMW_KG</WeightUnitOfMeasureEnumVal>
+			<LengthUnitOfMeasureEnumVal>UML_METER</LengthUnitOfMeasureEnumVal>
+			<DistanceUnitOfMeasureEnumVal>UMD_KMS</DistanceUnitOfMeasureEnumVal>
+			<MaximumAllowedLowestCostPercent>0.0</MaximumAllowedLowestCostPercent>
+			<CorporateID1></CorporateID1>
+			<CorporateID2/>
+			<DivisionCode>ELEM</DivisionCode>
+			<ExternalCode1/>
+			<ExternalCode2/>
+			<MinimumTenderLeadTime>0.00</MinimumTenderLeadTime>
+			<ReferenceNumberClassification/>
+			<Address>
+				<Street>LAGO ZURICH</Street>
+				<City>AMPLIACION GRANADA</City>
+				<State>DF</State>
+				<CountryCode>MX</CountryCode>
+				<PostalCode/>
+				<Latitude>10.0000</Latitude>
+				<Longitude>10.0000</Longitude>
+				<ResidentialFlag>FALSE</ResidentialFlag>
+			</Address>
+			<Contact>
+				<PrimaryTelephoneNumber/>
+				<SecondaryTelephoneNumber/>
+				<FaxNumber/>
+				<EmailAddress/>
+				<URL/>
+			</Contact>
+			<IgnoreContactsFlag>TRUE</IgnoreContactsFlag>
+			<IgnoreLaneAvailabilitiesFlag>TRUE</IgnoreLaneAvailabilitiesFlag>
+			<IgnoreCarrierAccountNumbersFlag>TRUE</IgnoreCarrierAccountNumbersFlag>
+			<IgnoreMatchFreightBillCurrencyFlag>TRUE</IgnoreMatchFreightBillCurrencyFlag>
+			<IgnoreEquipmentAvailabilityDateRangeFlag>TRUE</IgnoreEquipmentAvailabilityDateRangeFlag>
+		</Carrier>
+	</Entity>
+</CISDocument>

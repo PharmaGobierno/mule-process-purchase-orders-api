@@ -1,0 +1,92 @@
+{
+  "d": {
+    "__metadata": {
+      "id": "https://vhtxns4plb.traxion.global/sap/opu/odata/sap/zsdws_provision_srv/IM_PROVISIONSet('')",
+      "uri": "https://vhtxns4plb.traxion.global/sap/opu/odata/sap/zsdws_provision_srv/IM_PROVISIONSet('')",
+      "type": "ZSDWS_PROVISION_SRV.IM_T_SD_H_"
+    },
+    "IM_SYSTEM": "",
+    "PROCESS": "",
+    "SERIE": "",
+    "VBAK_VKORG": "",
+    "VBAK_VTWEG": "",
+    "VBAK_SPART": "",
+    "VBAK_VKBUR": "",
+    "VBAK_VKGRP": "",
+    "VBAK_XBLNR": "",
+    "KUAGV_KUNNR": "",
+    "VBKD_BSTKD": "",
+    "VBKD_BSTDK": "",
+    "VBKD_ZTERM": "",
+    "VBAK_AUGRU": "",
+    "VBAK_WAERK": "",
+    "VBAK_ABRVW": "",
+    "VBKD_BZIRK": "",
+    "VBKD_KDKG1": "",
+    "VBKD_KDKG2": "",
+    "VBKD_SDABW": "",
+    "VBPA_PARVW1": "",
+    "VBPA_KUNNR1": "",
+    "VBPA_PARVW2": "",
+    "VBPA_KUNNR2": "",
+    "VBPA_PARVW3": "",
+    "VBPA_KUNNR3": "",
+    "VBKD_BSARK": "",
+    "VBAK_BNAME": "",
+    "VBAK_TELF1": "",
+    "VBAK_SUBMI": "",
+    "VBKD_IHREZ_E": "",
+    "VBKD_BSTKD_E": "",
+    "VBKD_BSTDK_E": "",
+    "VBAK_KVGR1": "",
+    "VBAK_KVGR2": "",
+    "KONV_KBETR": "",
+    "TEXT_LINE_C001": "",
+    "TEXT_LINE_C002": "",
+    "TEXT_LINE_C003": "",
+    "TEXT_LINE_C004": "",
+    "TEXT_LINE_C005": "",
+    "TEXT_LINE_C006": "",
+    "TEXT_LINE_C007": "",
+    "EX_RETURN": {
+      "__metadata": {
+        "id": "https://vhtxns4plb.traxion.global/sap/opu/odata/sap/zsdws_provision_srv/EX_RETURNSet('0000000002')",
+        "uri": "https://vhtxns4plb.traxion.global/sap/opu/odata/sap/zsdws_provision_srv/EX_RETURNSet('0000000002')",
+        "type": "ZSDWS_PROVISION_SRV.EX_RETURN"
+      },
+      "IM_SYSTEM": "0000000002",
+      "PROCESS": "001",
+      "VBRK_VBELN": "",
+      "VBAK_VBELN": "",
+      "VBKD_BSTKD": "2793227932",
+      "EX_STATUS": "E",
+      "EXT_T_MENSAJE": {
+        "results": [
+          {
+            "__metadata": {
+              "id": "https://vhtxns4plb.traxion.global/sap/opu/odata/sap/zsdws_provision_srv/ItMensajesSet('%20%205')",
+              "uri": "https://vhtxns4plb.traxion.global/sap/opu/odata/sap/zsdws_provision_srv/ItMensajesSet('%20%205')",
+              "type": "ZSDWS_PROVISION_SRV.ItMensajes"
+            },
+            "ID": "  5",
+            "DESC_M": "Centro de beneficio  no corresponde con el dato enviado a SAP"
+          },
+          {
+            "__metadata": {
+              "id": "https://vhtxns4plb.traxion.global/sap/opu/odata/sap/zsdws_provision_srv/ItMensajesSet('%20%202')",
+              "uri": "https://vhtxns4plb.traxion.global/sap/opu/odata/sap/zsdws_provision_srv/ItMensajesSet('%20%202')",
+              "type": "ZSDWS_PROVISION_SRV.ItMensajes"
+            },
+            "ID": "  2",
+            "DESC_M": "E: Ya existe un pedido con la misma carta porte"
+          }
+        ]
+      }
+    },
+    "IM_T_SD_P_": {
+      "results": [
+        
+      ]
+    }
+  }
+}

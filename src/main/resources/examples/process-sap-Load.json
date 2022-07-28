@@ -1,0 +1,18 @@
+{
+                        "SystemLoadID": "4563",
+                        "AdditionalChargesAmount": "0",
+                        "CurrentLoadOperationalStatusEnumVal": "S_COMPLETED",
+                        "ActualChargedAmount": "22500",
+                        "ActualCurrencyTypeDescr": "PESO MEXICANO",
+                        "CarrierCode": "203136",
+                        "ServiceCode": "FTL",
+                        "CustomerCode": "MXS0008",
+                        "NumberOfShipments": "1",
+                        "SystemShipmentID": "6225",
+                        "ReferenceNumber1": "39229",
+						"ReferenceNumber2": "39229",
+						"ReferenceNumber3": "39229",
+						"ReferenceNumber4": "39229",
+						"ReferenceNumber5": "39229",
+						"ReferenceNumber6": "39229"
+                    }

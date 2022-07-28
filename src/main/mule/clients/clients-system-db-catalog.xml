@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="clients-system-db-commons-catalog" doc:id="83804c4a-b856-4592-85b8-0044f0a79292" >
+		<http:request method="GET" doc:name="Request" doc:id="e891a8e4-dcaa-4f82-8979-f21c5df4e93e" config-ref="client-system-db-catalogHTTP_Request_configuration" path="${client.db.system.db.catalog.path}" >
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('client.db.https.client_secret'),
+	"client_id" : p('client.db.https.client_id')
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"catalogName" : "sapCountriesStatesConverted",
+	"key_search" : vars.search
+}]]]></http:query-params>
+		</http:request>
+	</sub-flow>
+	<sub-flow name="clients-system-db-catalog" doc:id="3302f1b6-21f4-4a87-beca-f117e52c1a2c" >
+		<http:request method="GET" doc:name="Call system-db-catalog" doc:id="1fbc2e04-a6c8-44f8-969a-ccbbd2ddf021" config-ref="client-system-db-catalogHTTP_Request_configuration" path="${client.db.system.db.catalog.path}">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('client.db.https.client_secret'),
+	"client_id" : p('client.db.https.client_id')
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"catalogName" : vars.entityConverter, 
+	"key_search": vars.serch_code
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="3a5b0e2e-f4f8-4492-8745-eca3d6cd38e4" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="ClientCode" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"Value": if( isEmpty(payload[0].value_result)) (vars.serch_code) else  (payload[0].value_result)
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="clients-system-db-catalog-profitcenter" doc:id="63e1822c-960a-49fd-8277-f37f1921949a">
+		<http:request method="GET" doc:name="Call system-db-catalog-profitcenter" doc:id="3855014e-8932-4829-b688-13f62bbb98d0" config-ref="client-system-db-catalogHTTP_Request_configuration" path="${client.db.system.db.catalog.path}">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('client.db.https.client_secret'),
+	"client_id" : p('client.db.https.client_id')
+}]]]></http:headers>
+			<http:query-params><![CDATA[#[output application/java
+---
+{
+	"catalogName" : "centroCostosConverter", 
+	"key_search": payload.value
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="d7fa9e85-0188-4bfa-bb68-3b07f00b4a1e">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload.value_result]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<sub-flow name="clients-system-db-catalog-email" doc:id="9eeb2dd7-8861-4ae4-bf76-e29717a13aac" >
+		<http:request method="GET" doc:name="Request" doc:id="2481942d-03af-4502-bdc5-dae601b253cd" path="${client.db.system.db.catalog.email.path}" config-ref="client-system-db-catalogHTTP_Request_configuration">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('client.db.https.client_secret'),
+	"client_id" : p('client.db.https.client_id')
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"carrierCode" : payload.carrierCode
+}]]]></http:query-params>
+		</http:request>
+		<set-variable value='#[if((payload.correo)== null)("s.perezm@traxion.global") else if((payload.correo)== "")("s.perezm@traxion.global") else (payload.correo)]' doc:name="Set Variable" doc:id="72e88eda-8d79-4cb0-8b35-0826eac0c484" variableName="correo"/>
+	</sub-flow>
+</mule>

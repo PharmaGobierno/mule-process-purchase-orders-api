@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<sub-flow name="orchestrator-scheduler-shipments-publish-shipment" doc:id="951537db-daa8-414c-bb0c-e69b3beda753" >
+		<jms:publish doc:name="Publish" doc:id="9c41fe7e-fa59-4f6d-981a-644d509b13bc" destination="${jms.settings.queue.system.tms.out.traxporta}" config-ref="JMS_Config" persistentDelivery="true">
+			<jms:message >
+				<jms:properties ><![CDATA[#[{
+	"status": payload.CISDocument.Load.CurrentLoadOperationalStatusEnumVal default payload.CISDocument.Shipment.CurrentShipmentOperationalStatusEnumVal,
+	"operation_name": payload.CISDocument.ApiHeader.OperationName,
+	"message_origin": "process_tms_utils",
+    "load": payload.CISDocument.Load.SystemLoadID,
+    "shipment_number": payload.CISDocument.Shipment.ShipmentNumber,
+    "division_code":  payload.CISDocument.Load.DivisionCode default payload.CISDocument.Shipment.DivisionCode, 
+    "event_name":  payload.CISDocument.ApiHeader.OperationName,
+    "file_name": vars.name default "no provider"
+}]]]></jms:properties>
+			</jms:message>
+		</jms:publish>
+	</sub-flow>	
+</mule>

@@ -1,0 +1,40 @@
+{
+    "shipment": {
+        "system_shipment_id": "34111",
+        "shipment_number": "TEST_D11",
+        "customer_code": "V00153",
+        "ar_service_code": "FTL",
+        "shipment_description": "SEREL063",
+        "pickup_to_date_time": "2021-09-30T12:59:00",
+        "profit_center_code": "TT010104",
+        "customer_service_representative_code": "",
+        "currency_code": "MXN",
+        "currency_code_descr": "PESO MEXICANO",
+        "current_shipment_financial_status_enum_val": "S_F_ELIGIBLE",
+        "system_load_id": "25893",
+        "number_of_shipment_legs": "1",
+        "rating_valid_flag": "true",
+        "additional_charges_amount": "0",
+        "charged_amount": "2941",
+        "logistics_group_code":"TXL",
+        "reference_number_3": "INBOUND",
+        "reference_number_6": "COMERCIALIZADORA AGRICOLA Y DE BIEN",
+        "charges": [
+            {
+                "charge_code": "FLETE",
+                "charge_amount": "23123.09",
+                "charge_material": "",
+                "charge_description": ""
+            },
+            {
+                "charge_code": "FLETE",
+                "charge_amount": "23123.09",
+                "charge_material": "",
+                "charge_description": ""
+            }
+        ]
+    },
+    "load": {
+        "carrier_code": "MTNNS"
+    }
+}

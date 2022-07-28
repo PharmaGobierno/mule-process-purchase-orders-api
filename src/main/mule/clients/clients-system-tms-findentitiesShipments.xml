@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="clients-system-tms-findentitiesShipment" doc:id="3302f1b6-21f4-4a87-beca-f117e52c1a2c" >
+		<http:request method="POST" doc:name="Request" doc:id="1fbc2e04-a6c8-44f8-969a-ccbbd2ddf021" config-ref="client-system-tms-connection-HTTP_Request_configuration" path="${client.system-tms-connection.http.path.findentities}">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_id": p('client.tms.https.client_id'),
+	"client_secret": p('client.tm.https.client_secret')
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"StartAtRow" : "0",
+	"MaxRows" : "999999",
+	"TotalRowCount" : "0",
+	"EntityType" : "ShipmentType"
+}]]]></http:query-params>
+		</http:request>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="9ae62ad8-b72a-475b-9b6d-edd3004c0b9e" type="HTTP:BAD_REQUEST, HTTP:CLIENT_SECURITY, HTTP:FORBIDDEN, HTTP:INTERNAL_SERVER_ERROR, HTTP:METHOD_NOT_ALLOWED, HTTP:NOT_ACCEPTABLE, HTTP:NOT_FOUND, HTTP:PARSING, HTTP:RETRY_EXHAUSTED, HTTP:SECURITY, HTTP:SERVICE_UNAVAILABLE, HTTP:TIMEOUT, HTTP:TOO_MANY_REQUESTS, HTTP:UNAUTHORIZED, HTTP:UNSUPPORTED_MEDIA_TYPE, EXPRESSION, STREAM_MAXIMUM_SIZE_EXCEEDED" >
+				<ee:transform doc:name="Transform Message" doc:id="01f8aa42-9902-4c12-9a44-9468c196ce6c" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	error:error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="5dfcd57b-8022-41c3-b5e4-c638a9bcabcf" type="HTTP:CONNECTIVITY" >
+				<ee:transform doc:name="Transform Message" doc:id="903bd127-812c-4dfa-a474-d0e74ffd2228" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	error:error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>

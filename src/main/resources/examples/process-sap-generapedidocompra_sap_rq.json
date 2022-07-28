@@ -1,0 +1,64 @@
+{
+  "IM_COMP_CODE": "TL00",
+  "IM_DOC_TYPE": "ZTRA",
+  "IM_CREAT_DATE": "20200925",
+  "IM_CREATED_BY": "AGORA_JG",
+  "IM_VENDOR": "0309000704",
+  "IM_PURCH_ORG": "1800",
+  "IM_PUR_GROUP": "113",
+  "IM_CURRENCY": "USD",
+  "IM_DOC_DATE": "20200925",
+  "IM_IHREZ": "000000000289",
+  "IM_BELNR": "0100000149",
+  "IM_GJAHR": "",
+  "IM_POTEXTHEADER": "5852",
+  "IM_COND_VALUE": "0",
+  "IM_IT_ITEM": [
+    {
+      "IM_ITEM": "00010",
+      "IM_ADRN2": "363092",
+      "IM_SHORT_TEXT": "Daños y perdida de mercacía",
+      "IM_MATERIAL": "000000000003000202",
+      "IM_PLANT": "1801",
+      "IM_QUANTITY": "1.000",
+      "IM_PO_UNIT": "SER",
+      "IM_NET_PRICE": "90.000",
+      "IM_TAX_CODE": "W1",
+      "IM_ACCTASSCAT": "K",
+      "IM_FUND": "",
+      "IM_FUNDS_CTR": "",
+      "IM_DELIVERY_DATE": "20200925",
+      "IM_COSTCENTER": "TL010101",
+      "IM_EAN11": "5491",
+      "IM_POTEXTITEM": "P2105"
+    },
+    {
+      "IM_ITEM": "00020",
+      "IM_ADRN2": "363092",
+      "IM_SHORT_TEXT": "CASETA",
+      "IM_MATERIAL": "000000000003000187",
+      "IM_PLANT": "1801",
+      "IM_QUANTITY": "1.000",
+      "IM_PO_UNIT": "SER",
+      "IM_NET_PRICE": "8.000",
+      "IM_TAX_CODE": "W1",
+      "IM_ACCTASSCAT": "K",
+      "IM_FUND": "",
+      "IM_FUNDS_CTR": "",
+      "IM_DELIVERY_DATE": "20200925",
+      "IM_COSTCENTER": "TL010101",
+      "IM_EAN11": "5491",
+      "IM_POTEXTITEM": "P2107"
+    }
+  ],
+  "EX_RETURN": {
+    "EX_ID_ORDEN_COMPRA": "",
+    "EX_STATUS": "",
+    "EX_IT_MENSAJE": [
+      {
+        "EX_ID_MSG": "",
+        "EX_DESC": ""
+      }
+    ]
+  }
+}

@@ -1,0 +1,51 @@
+{
+    "im_system": "0000000003",
+    "im_bldat": "13.08.2020",
+    "im_budat": "13.08.2020",
+    "im_bukrs": "TL00",
+    "im_blart": "SA",
+    "im_waers": "MXN",
+    "im_kursf": "",
+    "im_wwert": "",
+    "im_xblnr": "5518",
+    "im_bktxt": "000000000183",
+    "im_posc": [{
+            "im_cons": "010",
+            "im_lifnr": "",
+            "im_umskz": "",
+            "im_hkont": "2106020300",
+            "im_wrbtr": "-3635.2",
+            "im_mwskz": "",
+            "im_wt_withcd": "",
+            "im_zterm": "",
+            "im_kostl": "",
+            "im_zlsch": "",
+            "im_zuonr": "",
+            "im_sgtxt": "",
+            "im_prctr": ""
+        }, {
+            "im_cons": "020",
+            "im_lifnr": "",
+            "im_umskz": "",
+            "im_hkont": "5107012300",
+            "im_wrbtr": "3635.2",
+            "im_mwskz": "",
+            "im_wt_withcd": "",
+            "im_zterm": "",
+            "im_kostl": "TL010101",
+            "im_zlsch": "",
+            "im_zuonr": "",
+            "im_sgtxt": "",
+            "im_prctr": ""
+        }
+    ],
+    "ex_it_return": [{
+            "ex_lifnr": "",
+            "ex_bukrs": "",
+            "ex_xblnr": "",
+            "ex_bldat": "",
+            "ex_belnr": "",
+            "ex_desc_m": ""
+        }
+    ]
+}

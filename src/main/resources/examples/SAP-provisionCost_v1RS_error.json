@@ -1,0 +1,42 @@
+{
+  "d": {
+    "__metadata": {
+      "id": "https://vhtxns4plb.traxion.global/sap/opu/odata/sap/zfi_poliza_contable_01_srv/PayLiqAdvs('')",
+      "uri": "https://vhtxns4plb.traxion.global/sap/opu/odata/sap/zfi_poliza_contable_01_srv/PayLiqAdvs('')",
+      "type": "ODataDemo.PayLiqAdv"
+    },
+    "im_system": "",
+    "im_bldat": "",
+    "im_budat": "",
+    "im_bukrs": "",
+    "im_blart": "",
+    "im_waers": "",
+    "im_kursf": "0.00000 ",
+    "im_wwert": "",
+    "im_xblnr": "",
+    "im_bktxt": "",
+    "ex_status": "S",
+    "ex_it_return": {
+      "results": [
+        {
+          "__metadata": {
+            "id": "https://vhtxns4plb.traxion.global/sap/opu/odata/sap/zfi_poliza_contable_01_srv/ItReturnSet(ex_lifnr='',ex_bukrs='TL00',ex_xblnr='18102',ex_bldat='17.02.2021',ex_belnr='0100011570',ex_desc_m='S%3A%20S-RW-605-El%20documento%20se%20ha%20contabilizado%20correctamente%3A%20BKPFF%200100011570TL002021%20S4PCLNT400')",
+            "uri": "https://vhtxns4plb.traxion.global/sap/opu/odata/sap/zfi_poliza_contable_01_srv/ItReturnSet(ex_lifnr='',ex_bukrs='TL00',ex_xblnr='18102',ex_bldat='17.02.2021',ex_belnr='0100011570',ex_desc_m='S%3A%20S-RW-605-El%20documento%20se%20ha%20contabilizado%20correctamente%3A%20BKPFF%200100011570TL002021%20S4PCLNT400')",
+            "type": "ODataDemo.ItReturn"
+          },
+          "ex_lifnr": "",
+          "ex_bukrs": "TL00",
+          "ex_xblnr": "18102",
+          "ex_bldat": "17.02.2021",
+          "ex_belnr": "0100011570",
+          "ex_desc_m": "S: S-RW-605-El documento se ha contabilizado correctamente: BKPFF 0100011570TL002021 S4PCLNT400"
+        }
+      ]
+    },
+    "im_posc": {
+      "results": [
+        
+      ]
+    }
+  }
+}

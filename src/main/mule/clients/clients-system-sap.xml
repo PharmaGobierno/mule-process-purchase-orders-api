@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:traxion-s-logger="http://www.mulesoft.org/schema/mule/traxion-s-logger" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/traxion-s-logger http://www.mulesoft.org/schema/mule/traxion-s-logger/current/mule-traxion-s-logger.xsd">
+	<flow name="clients-system-sap-ingreso" doc:id="3302f1b6-21f4-4a87-beca-f117e52c1a2c" >
+		<http:request method="POST" doc:name="Request" doc:id="1fbc2e04-a6c8-44f8-969a-ccbbd2ddf021" config-ref="client-system-sapHTTP_Request_configuration" path="${client.system.sap.http.path.orderincome}" sendCorrelationId="ALWAYS" correlationId="#[correlationId]">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_id" : p('client.system.sap.https.client_id'),
+	"client_secret": p('client.system.sap.https.client_secret')
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"action" : if(vars.operation_type == 'PROVISION_INGRESO')"provisioningreso" else if(vars.operation_type == 'PEDIDO_VENTA') "pedidoventa" else ""
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="1f15efb0-da88-41ee-8e1e-42f43015975c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="fc401cb6-e960-448d-835d-b8deb114a7e1" type="HTTP:BAD_REQUEST, HTTP:CLIENT_SECURITY, HTTP:FORBIDDEN, HTTP:INTERNAL_SERVER_ERROR, HTTP:METHOD_NOT_ALLOWED, HTTP:NOT_ACCEPTABLE, HTTP:NOT_FOUND, HTTP:PARSING, HTTP:RETRY_EXHAUSTED, HTTP:SECURITY, HTTP:SERVICE_UNAVAILABLE, HTTP:TIMEOUT, HTTP:TOO_MANY_REQUESTS, HTTP:UNAUTHORIZED, HTTP:UNSUPPORTED_MEDIA_TYPE, EXPRESSION, STREAM_MAXIMUM_SIZE_EXCEEDED">
+				<ee:transform doc:name="Transform Message" doc:id="e030c472-eaee-41fb-884a-62b89d45d921" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	error: error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="b2c92be8-a265-4448-8601-7a2e946ee8ea" type="HTTP:CONNECTIVITY">
+				<ee:transform doc:name="Transform Message" doc:id="b794b498-65a3-47cf-b434-b30712e8751d" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	error: error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="clients-system-sap-provision_costo" doc:id="b1cfe15a-698c-4470-853a-f4b385959f7e" >
+		<http:request method="POST" doc:name="Request" doc:id="2344eab9-0020-4a7c-afd3-724098797f84" config-ref="client-system-sapHTTP_Request_configuration" path="${client.system.sap.http.path.provisioncost}" correlationId="#[correlationId]">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_id" : p('client.system.sap.https.client_id'),
+	"client_secret": p('client.system.sap.https.client_secret')
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"action" : "provisioncosto"
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="1b763e06-8de5-4cc6-8cd5-bfbd589aa21d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-variable value="#[payload]" doc:name="Set Variable" doc:id="6e2de8a7-3f77-4738-aa22-67a1ffdc1010" variableName="responsesaploads" />
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="66626ae6-a95f-463e-b4ac-2a974032313b" type="HTTP:BAD_REQUEST, HTTP:CLIENT_SECURITY, HTTP:FORBIDDEN, HTTP:INTERNAL_SERVER_ERROR, HTTP:METHOD_NOT_ALLOWED, HTTP:NOT_ACCEPTABLE, HTTP:NOT_FOUND, HTTP:PARSING, HTTP:RETRY_EXHAUSTED, HTTP:SECURITY, HTTP:SERVICE_UNAVAILABLE, HTTP:TIMEOUT, HTTP:TOO_MANY_REQUESTS, HTTP:UNAUTHORIZED, HTTP:UNSUPPORTED_MEDIA_TYPE, EXPRESSION, STREAM_MAXIMUM_SIZE_EXCEEDED" >
+				<ee:transform doc:name="Transform Message" doc:id="cc998c98-6008-4990-92dd-a01735c1f05a" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	error: error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="3fb553bf-81a4-4b2b-8012-54630861cefd" type="HTTP:CONNECTIVITY" >
+				<ee:transform doc:name="Transform Message" doc:id="0a853560-1484-40b5-ada6-bcf476f621ce" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	error: error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="clients-system-sap-ordencompra" doc:id="adc52359-1bad-4242-95e4-065ba0a09a2c" >
+		<http:request method="POST" doc:name="Request" doc:id="33cdc878-4f41-4575-9d31-5883a4c61b18" config-ref="client-system-sapHTTP_Request_configuration" path="${client.system.sap.http.path.ordencompra}">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_id" : p('client.system.sap.https.client_id'),
+	"client_secret": p('client.system.sap.https.client_secret')
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"action" : "ordencompra"
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="67be9516-99ba-48c5-899a-5f1ca0cae7db" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+
+	payload
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-variable value="#[payload]" doc:name="Set Variable" doc:id="ffe7dc72-b9db-480f-83d9-abfc85c21873" variableName="responsesap"/>
+		<logger level="INFO" doc:name="Logger" doc:id="591d95f3-f5e8-46bc-9cce-f3d7f15838a6" message="#[payload]"/>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="7b26f42f-2652-4e2f-a1d5-af08f8eb88be" type="HTTP:BAD_REQUEST, HTTP:CLIENT_SECURITY, HTTP:FORBIDDEN, HTTP:INTERNAL_SERVER_ERROR, HTTP:METHOD_NOT_ALLOWED, HTTP:NOT_ACCEPTABLE, HTTP:NOT_FOUND, HTTP:PARSING, HTTP:RETRY_EXHAUSTED, HTTP:SECURITY, HTTP:SERVICE_UNAVAILABLE, HTTP:TIMEOUT, HTTP:TOO_MANY_REQUESTS, HTTP:UNAUTHORIZED, HTTP:UNSUPPORTED_MEDIA_TYPE, EXPRESSION, STREAM_MAXIMUM_SIZE_EXCEEDED" >
+				<ee:transform doc:name="Transform Message" doc:id="a63aa81c-5b3f-4e1c-b12c-b6e5dc3f2aba" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	error: error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="09b43bfb-adcd-4b29-854e-2bcf8ba7d0d0" type="HTTP:CONNECTIVITY" >
+				<ee:transform doc:name="Transform Message" doc:id="d524b695-145a-4431-983c-7a82ea174537" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	error: error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="clients-system-cancelOrder" doc:id="72f63256-54d1-48e9-9c92-c3309d530291" >
+		<http:request method="DELETE" doc:name="Request" doc:id="4ecd36a0-35a1-470e-abb3-bdacb0902cad" config-ref="client-system-sapHTTP_Request_configuration" path="${client.system.sap.http.path.cancelar.provcosto}" >
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_id" : p('client.system.sap.https.client_id'),
+	"client_secret": p('client.system.sap.https.client_secret')
+}]]]></http:headers>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="d077e541-c191-4c8d-bc0e-0875b794ea96" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+
+	payload
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-variable value="#[payload]" doc:name="Set Variable" doc:id="d407f15f-3f35-4957-92b8-3fe19dee87f1" variableName="responsesap" />
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="e967e557-60db-4511-91dd-77413437647d" type="HTTP:BAD_REQUEST, HTTP:CLIENT_SECURITY, HTTP:FORBIDDEN, HTTP:INTERNAL_SERVER_ERROR, HTTP:METHOD_NOT_ALLOWED, HTTP:NOT_ACCEPTABLE, HTTP:NOT_FOUND, HTTP:PARSING, HTTP:RETRY_EXHAUSTED, HTTP:SECURITY, HTTP:SERVICE_UNAVAILABLE, HTTP:TIMEOUT, HTTP:TOO_MANY_REQUESTS, HTTP:UNAUTHORIZED, HTTP:UNSUPPORTED_MEDIA_TYPE, EXPRESSION, STREAM_MAXIMUM_SIZE_EXCEEDED" >
+				<ee:transform doc:name="Transform Message" doc:id="ac0d5422-36f3-4e38-a34b-ae61f13c4914" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	error: error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="5c7dbfe9-bb11-4d04-b7b9-a6a1ae351154" type="HTTP:CONNECTIVITY" >
+				<ee:transform doc:name="Transform Message" doc:id="f272b5ea-080e-4650-b425-f37fd1b24b63" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	error: error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="clients-system-sap-purchaseorder" doc:id="a1861fd5-e80d-4a9b-8c4a-c35325134dcf" >
+		<http:request method="POST" doc:name="Request" doc:id="ea4396a1-5ba5-4dd2-97a4-b1578dd1e6db" config-ref="client-system-sapHTTP_Request_configuration" path="${client.system.sap.http.path.ordencompra}" >
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_id" : p('client.system.sap.https.client_id'),
+	"client_secret": p('client.system.sap.https.client_secret')
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"action" : "ordencompra"
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="5ba04343-32d7-428b-8b2e-72d567345aee" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+
+	payload
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-variable value="#[payload]" doc:name="Set Variable" doc:id="bf339d6b-b125-4e1a-aef2-8031be6d368c" variableName="responsesap" />
+		<logger level="INFO" doc:name="Logger" doc:id="690032f0-c649-42b4-86db-0ec9ce6ad970" message="#[payload]" />
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="36b8039c-90c0-45ba-b4a6-32ecf0d95661" type="HTTP:CLIENT_SECURITY, HTTP:FORBIDDEN, HTTP:INTERNAL_SERVER_ERROR, HTTP:METHOD_NOT_ALLOWED, HTTP:NOT_ACCEPTABLE, HTTP:NOT_FOUND, HTTP:PARSING, HTTP:RETRY_EXHAUSTED, HTTP:SECURITY, HTTP:SERVICE_UNAVAILABLE, HTTP:TIMEOUT, HTTP:TOO_MANY_REQUESTS, HTTP:UNAUTHORIZED, HTTP:UNSUPPORTED_MEDIA_TYPE, EXPRESSION, STREAM_MAXIMUM_SIZE_EXCEEDED" >
+				<ee:transform doc:name="Transform Message" doc:id="49cf516d-973e-40cb-961c-b9ed181221aa" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	error: error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="d3504ae4-3cdc-48d6-83c3-1a9abf347874" type="HTTP:CONNECTIVITY" >
+				<ee:transform doc:name="Transform Message" doc:id="8327eab6-a593-4a25-be79-682aae0fd866" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	error: error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="f8ad6d05-5a66-47b1-bbea-83829fd2b052" type="HTTP:BAD_REQUEST" >
+				<ee:transform doc:name="Transform Message" doc:id="f871af50-6dcc-42b8-ae3e-7c27c9bc0255" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	error: error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<flow-ref doc:name="orchestrator-post-purchaseorder-error-continue" doc:id="86391c3a-4545-40d3-bfe0-82d81545e3c8" name="orchestrator-post-purchaseorder-error-continue"/>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="clients-system-sap-pedido-venta" doc:id="ad01aae4-a175-4ccf-aed3-622826a4b0c7" >
+		<http:request method="POST" doc:name="Call pedido venta" doc:id="acfb8fbb-65bf-4f0f-84e2-760eaa8f7c69" config-ref="client-system-sapHTTP_Request_configuration" path="${client.system.sap.http.path.orderincome}" sendCorrelationId="ALWAYS" correlationId="#[correlationId]">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_id" : p('client.system.sap.https.client_id'),
+	"client_secret": p('client.system.sap.https.client_secret')
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"action" : "pedidoventa"
+}]]]></http:query-params>
+		</http:request>
+		<ee:transform doc:name="response to json" doc:id="ce9e8daf-d52c-48ed-aeeb-b045fea8e934" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="Copy_of_On Error Continue" doc:id="b95a83b7-805c-4afb-b89b-64797da5ca9a" type="HTTP:BAD_REQUEST, HTTP:CLIENT_SECURITY, HTTP:FORBIDDEN, HTTP:INTERNAL_SERVER_ERROR, HTTP:METHOD_NOT_ALLOWED, HTTP:NOT_ACCEPTABLE, HTTP:NOT_FOUND, HTTP:PARSING, HTTP:RETRY_EXHAUSTED, HTTP:SECURITY, HTTP:SERVICE_UNAVAILABLE, HTTP:TIMEOUT, HTTP:TOO_MANY_REQUESTS, HTTP:UNAUTHORIZED, HTTP:UNSUPPORTED_MEDIA_TYPE, EXPRESSION, STREAM_MAXIMUM_SIZE_EXCEEDED" >
+				<ee:transform doc:name="Copy_of_Transform Message" doc:id="3937fbc0-15ab-4922-8b12-3378031cb955" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	error: error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="Copy_of_On Error Propagate" doc:id="b6972971-0aa8-44d4-a35a-40e6ca325cca" type="HTTP:CONNECTIVITY" >
+				<ee:transform doc:name="Copy_of_Transform Message" doc:id="86a06d58-445f-44a1-a25e-4f24bbb843e0" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	error: error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<sub-flow name="clients-system-sap-poliza-costo" doc:id="6de2096a-6584-4e2f-82cf-3257929b0a2f" >
+		<http:request method="POST" doc:name="apply cost policy" doc:id="e63c6e55-44e5-421e-916f-30133dac1721" config-ref="client-system-sapHTTP_Request_configuration" path="${client.system.sap.http.path.cost_journal}">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_id" : p('client.system.sap.https.client_id'),
+	"client_secret": p('client.system.sap.https.client_secret')
+}]]]></http:headers>
+		</http:request>
+	</sub-flow>
+	<sub-flow name="clients-system-sap-cancelar-poliza-costo" doc:id="6bbc893b-84e1-4ea7-bf8c-98499cf681cb" >
+		<http:request method="POST" doc:name="cancel cost policy" doc:id="6c18be75-524a-4441-bcec-915a41f4b87b" config-ref="client-system-sapHTTP_Request_configuration" path="${client.system.sap.http.path.cost_journal.reverse}">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_id" : p('client.system.sap.https.client_id'),
+	"client_secret": p('client.system.sap.https.client_secret')
+}]]]></http:headers>
+		</http:request>
+	</sub-flow>
+	<sub-flow name="clients-system-sapSub_Status" doc:id="5fc028ab-0435-46d9-93f7-a6bc80840aa9" >
+		<http:request method="GET" doc:name="Get Status" doc:id="6e972cac-ff05-4ab3-818e-dc890069566a" config-ref="client-system-sapHTTP_Request_configuration" path="${client.system.sap.http.path.status}">
+			<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_id" : p('client.system.sap.https.client_id'),
+	"client_secret": p('client.system.sap.https.client_secret')
+}]]]></http:headers>
+			<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"trk_num" : vars.trk_num default "",
+	"status_cd" : vars.status_cd default ""
+}]]]></http:query-params>
+		</http:request>
+	</sub-flow>
+	<sub-flow name="client-system-sap-create-interlocutor" doc:id="0a556457-f904-46f3-be49-c586182ce9a8" >
+		<try doc:name="Copy_of_Try" doc:id="c2749934-9a9a-4d4e-a6e7-9742561ee61b" >
+			<logger level="INFO" doc:name="Logger" doc:id="623e0686-ed72-4b19-9adc-67e7da0aa377" message="#[payload]" />
+			<http:request method="POST" doc:name="POST-Create Provision Income" doc:id="85cedab8-1181-4366-8396-159719f8640c" config-ref="client-system-sapHTTP_Request_configuration" path="${client.system.sap.http.path.interlocutores}" >
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_id" : p('client.system.sap.https.client_id'),
+	"client_secret": p('client.system.sap.https.client_secret')
+}]]]></http:headers>
+				<http:query-params ><![CDATA[#[output application/java
+---
+{
+	"company" : vars.company
+}]]]></http:query-params>
+			</http:request>
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="Copy_of_On Error Continue" doc:id="11890bb0-e352-41d0-b1a2-56bb7b63bf75" type="HTTP:BAD_REQUEST" >
+					<logger level="INFO" doc:name="Copy_of_Logger" doc:id="19c511f3-666f-4d45-832a-e07ed8cc8820" message='#["Interlocutor No Creado"]' />
+				</on-error-continue>
+			</error-handler>
+		</try>
+	</sub-flow>
+</mule>
