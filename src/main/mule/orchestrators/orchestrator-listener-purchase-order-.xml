@@ -8,12 +8,10 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
 http://www.mulesoft.org/schema/mule/traxion-s-logger http://www.mulesoft.org/schema/mule/traxion-s-logger/current/mule-traxion-s-logger.xsd">
-	<sub-flow name="orchestrator-jms-start-transactions-purchase-order" doc:id="4e1a046a-4c67-4146-a90e-90803e545b34" >
-		<choice doc:name="Choice" doc:id="dceb4e7d-02cc-495e-96dd-068362a593a0" >
-			<when expression="#[payload.CISDocument.Load.CurrentLoadOperationalStatusEnumVal == 'S_COMPLETED' and ( payload.CISDocument.Load.CurrentLoadFinancialStatusEnumVal == 'S_F_VOUCHER_CREATED' or  payload.CISDocument.Load.CurrentLoadFinancialStatusEnumVal == 'S_F_VOUCHER_MATCHED')]">
-				<ee:transform doc:name="Create OC Request" doc:id="24722b90-605f-45eb-a8ba-ec56e82475ad" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
+	<sub-flow name="orchestrator-jms-start-transactions-purchase-order" doc:id="ace60305-2a60-45c6-bb88-ea4f90a8e263" >
+		<ee:transform doc:name="Create OC Request" doc:id="24722b90-605f-45eb-a8ba-ec56e82475ad">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -36,12 +34,7 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
-				<flow-ref doc:name="orchestrator-listener-purchase-order-start" doc:id="fe101577-c3ad-4ef9-9364-cd9e49e59c69" name="orchestrator-listener-purchase-order-start"/>
-			</when>
-			<otherwise >
-				<logger level="INFO" doc:name="Logger" doc:id="bc0614ed-d3d2-4b9f-9255-1c2c5eb3c042" />
-			</otherwise>
-		</choice>
+		<flow-ref doc:name="orchestrator-listener-purchase-order-start" doc:id="fe101577-c3ad-4ef9-9364-cd9e49e59c69" name="orchestrator-listener-purchase-order-start" />
 	</sub-flow>
 	<sub-flow name="orchestrator-listener-purchase-order-start" doc:id="fef3308d-65d8-47b4-b43a-e31df00ebfe0" >
 		<set-variable value="#[payload]" doc:name="header_load" doc:id="b7683800-941c-4947-aea5-39b9235ec54f" variableName="header_load"/>
