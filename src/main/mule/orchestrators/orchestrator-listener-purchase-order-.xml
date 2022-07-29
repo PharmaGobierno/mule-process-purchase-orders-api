@@ -368,6 +368,23 @@ var filtroAnticipoMan ="AP_ADD_ANTICIPO"
 				</when>
 			</choice>
 		</foreach>
+		<logger level="INFO" doc:name="Logger" doc:id="16be7019-d1cb-4ffa-8a8b-cc1eae41637b" />
+		<ee:transform doc:name="Message Commit TMS" doc:id="e8b2abaf-5846-41a1-95bf-7d385df4a67e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"EntityType": "Load",
+	"ReferenceNumberActionEnumVal": "AT_ADD",
+	"ReferenceNumberCategoryEnumVal": "RNC_LD_LEG",
+	"ReferenceNumberEntityKey": vars.header_load.Load.system_load_id default "",
+	"ReferenceNumberTypeCode": "Financials_GL",
+	"ReferenceNumber": vars.OC_number default "",
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="clients-system-tms-update-referenceNumber" doc:id="4724384b-a51f-4ea0-bb27-9acc1d00a05f" name="clients-system-tms-update-referenceNumber" />
 		<error-handler >
 			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="5cb709e0-cd3a-448c-bf42-ea7518261ce8" type="ANY">
 				<ee:transform doc:name="Transform Message" doc:id="d6da010d-4ebb-4dd5-9554-5079ff01c804">
@@ -390,11 +407,11 @@ output application/java
 		<choice doc:name="Choice" doc:id="819890b5-7670-4d45-ab2c-8bc9dc255062">
 			<when expression='#[payload.d.EX_RETURN.EX_STATUS == "S"]'>
 				<logger level="INFO" doc:name="Logger" doc:id="bc5495f6-3820-4aff-a861-4369eec5067d" message="#['\n'] ********** El valor de ExStatus es: #[payload.d.EX_RETURN.EX_STATUS] **********  #['\n']" />
-				<ee:transform doc:name="Transform Message" doc:id="ede33fca-3667-4a81-a05f-a8391a49b994">
+<!-- [STUDIO:"Transform Message"]				<ee:transform doc:name="Transform Message" doc:id="ede33fca-3667-4a81-a05f-a8391a49b994">
 					<ee:message>
 						<ee:set-payload><![CDATA[%dw 2.0
 output application/json
----
+&#45;&#45;-
 {
 	"EntityType": "Load",
 	"ReferenceNumberActionEnumVal": "AT_ADD",
@@ -404,8 +421,9 @@ output application/json
 	"ReferenceNumber":( vars.responsesap.d.EX_RETURN.EX_ID_ORDEN_COMPRA default "") ++ "," ++ (((vars.responsesap.d.EX_RETURN.EX_IT_MENSAJE.results filter ($.EX_ID_MSG == 'MGO' ))[0].EX_DESC ) default ""),
 }]]></ee:set-payload>
 					</ee:message>
-				</ee:transform>
-				<flow-ref doc:name="Call to clients-system-tms-update-referenceNumber" doc:id="a9458d4e-1ad3-4cbe-953c-9a853b365135" name="clients-system-tms-update-referenceNumber" />
+				</ee:transform> [STUDIO] -->
+<set-variable value="#[(vars.OC_number  default &quot;&quot;) ++ &quot;|&quot; ++ (vars.responsesap.d.EX_RETURN.EX_ID_ORDEN_COMPRA default &quot;&quot;) ++ &quot;,&quot; ++ (((vars.responsesap.d.EX_RETURN.EX_IT_MENSAJE.results filter ($.EX_ID_MSG == 'MGO' ))[0].EX_DESC ) default &quot;&quot;)]" doc:name="Set Variable" doc:id="849d4a1b-6749-43a1-8a7c-86f7fe59a48c" variableName="OC_number"/>
+				<!-- [STUDIO:"Call to clients-system-tms-update-referenceNumber"]				<flow-ref doc:name="Call to clients-system-tms-update-referenceNumber" doc:id="a9458d4e-1ad3-4cbe-953c-9a853b365135" name="clients-system-tms-update-referenceNumber" /> [STUDIO] -->
 				<set-variable value="#[payload.body.processMaintainEntityReferenceNumberResponse.ResponseHeader.CompletedSuccessfully]" doc:name="Set Variable" doc:id="437378cf-cf0d-43aa-89c5-7042e39b0e63" variableName="statuscommit" />
 				<ee:transform doc:name="Transform Message" doc:id="bf45ce21-65ff-402f-b3ce-f5e55accda4f" >
 					<ee:message >
