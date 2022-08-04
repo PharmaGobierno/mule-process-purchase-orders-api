@@ -6,7 +6,7 @@
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="fe02ebf9-62c6-412f-a0c1-50c491432a03" >
-		<http:request-connection protocol="HTTPS" host="${system.generic.xconfiguration.http.host}" port="${system.generic.xconfiguration.http.port}" />
+		<http:request-connection protocol="HTTPS" host="${system.generic.xconfiguration.http.host}" port="${system.generic.xconfiguration.http.port}" connectionIdleTimeout="90000"/>
 	</http:request-config>
 	<sub-flow name="clients-generic-xconfiguration-CEBE-converter" doc:id="9d0ee35b-9f74-48ad-9500-d5bf7d9c327a" >
 		<http:request method="GET" doc:name="Request" doc:id="a1cc4f01-c787-446b-97b4-91408b8b6e6d" config-ref="HTTP_Request_configuration" path="/api/xconfiguration/search">

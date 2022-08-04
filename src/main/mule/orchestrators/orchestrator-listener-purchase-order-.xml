@@ -101,7 +101,7 @@ output application/json
 		</ee:transform>
 		<foreach doc:name="By each Freight Bill Number" doc:id="d91b5f29-9dfa-4769-ab70-2c8b00c37ece" collection="#[payload.freight_bill_numbers.*freight_bill]">
 			<choice doc:name="IS Carrier Interco??" doc:id="74a68b26-d736-4b40-a262-d3d2e1bbeaac" >
-				<when expression='#[!(payload.carrier_code default "" startsWith("MX")) and (sizeOf(payload.transaction) default 0) &gt; 0]'>
+				<when expression='#[(sizeOf(payload.transaction) default 0) &gt; 0]'>
 					<set-variable value="#[payload.transaction.charge_id]" doc:name="Set Variable" doc:id="dff2fabe-5b4a-46e1-bffd-62185d5b59b1" variableName="systemGLTransactionIdArray" />
 					<set-variable value="#[payload]" doc:name="Set Variable" doc:id="cbe6487d-0ce7-4046-b9b5-dc0fdce1bb39" variableName="FreightBillMessage" />
 					<logger level="INFO" doc:name="SystemLoadID" doc:id="89365080-ef54-4a12-afd9-800b5c8ce55c" message='#["system Load to OC " ++  (payload.transaction[0].load default "") ++ "-" ++( payload.carrier_code default "")]' />
