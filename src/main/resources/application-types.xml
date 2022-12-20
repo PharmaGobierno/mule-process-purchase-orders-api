@@ -5050,4 +5050,7 @@ type auto_4fd77ff4_c595_4ede_976a_80a4ff36f195_Output_Variables_CEBE_TranslateTX
       </types:output-event>
     </types:processor-declaration>
   </types:enrichment>
+  <types:enrichment select="#6c9dcb0f-4875-4747-abc8-fadc5d353492"/>
+  <types:enrichment select="#a2ce7a48-8578-4d6e-972c-114cf26a1d9e"/>
+  <types:enrichment select="#f53c18aa-1225-4589-b83b-44a3d54579bb"/>
 </types:mule>

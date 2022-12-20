@@ -22,6 +22,7 @@ output application/json
         "currency_code": payload.CISDocument.Load.CurrencyCode,
         "user_id":payload.CISDocument.Load.CreatedByUserCode,
         "provision_financials": (payload.CISDocument.Load.*ReferenceNumberStructure filter $.ReferenceNumberTypeCode == 'Financial' map ((item, index) -> item.ReferenceNumber))[-1],
+		"financials_GL": payload.CISDocument.Load.ReferenceNumber9,
         "customer_code": payload.CISDocument.Load.CustomerCode,
         "shipment_id": (if (payload.CISDocument.Load.SystemShipmentID == null) payload.CISDocument.Load.ShipmentLeg.SystemShipmentID else payload.CISDocument.Load.SystemShipmentID) default "",
         "centro_beneficios": "",
@@ -38,11 +39,32 @@ output application/json
 	</sub-flow>
 	<sub-flow name="orchestrator-listener-purchase-order-start" doc:id="fef3308d-65d8-47b4-b43a-e31df00ebfe0" >
 		<set-variable value="#[payload]" doc:name="header_load" doc:id="b7683800-941c-4947-aea5-39b9235ec54f" variableName="header_load"/>
-		<flow-ref doc:name="orchestrator-listener-purchase-order-getRelatedShipment" doc:id="ad207589-928f-4d42-9f05-d24b21686861" name="orchestrator-listener-purchase-order-getRelatedShipment"/>
-		<choice doc:name="Choice" doc:id="7026ee0e-8213-4d2f-8c26-f95cc9ba1f2a" >
+		<db:select doc:name="Select" doc:id="72c57290-06ba-41c8-bad0-ea7961355b23" config-ref="Database_Config">
+			<db:sql ><![CDATA[select status,oc from load_data where loadId=:load;]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	load:payload.Load.system_load_id
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="6c9dcb0f-4875-4747-abc8-fadc5d353492" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload reduce ((val, acc) -> acc ++ val)]]></ee:set-payload>
+			</ee:message>
+			<ee:variables >
+			</ee:variables>
+		</ee:transform>
+		<set-variable value="#[payload.oc]" doc:name="Set Variable" doc:id="41711c7d-7911-4738-a854-d40aa672c8c1" variableName="OC_number"/>
+		<choice doc:name="Choice" doc:id="66a51b64-fa24-45e5-8ceb-42d3207849a6" >
+			<when expression="payload.status != 'GL_COMPLETO' or vars.header_load.financials_GL==''  or vars.header_load.financials_GL == 'GL_INCOMPLETO'">
+				<flow-ref doc:name="orchestrator-listener-purchase-order-getRelatedShipment" doc:id="ad207589-928f-4d42-9f05-d24b21686861" name="orchestrator-listener-purchase-order-getRelatedShipment" />
+				<choice doc:name="Choice" doc:id="7026ee0e-8213-4d2f-8c26-f95cc9ba1f2a">
 			<when expression="#[vars.relatedShipment.Shipment.ReferenceNumber6 != 'SEGALMEX' and vars.relatedShipment.Shipment.ReferenceNumber6 != 'LICONSA' and vars.relatedShipment.Shipment.ReferenceNumber6 != 'DICONSA']">
 				<flow-ref doc:name="Get vouchers" doc:id="b87678f2-7b8a-400e-8890-0b076ae8e380" name="client-system-tms-connection-vouchers" />
 				<flow-ref doc:name="Call orchestrator-listener-purchaseorder_v2" doc:id="b6dc236c-d509-4547-86f9-bba97e8cadde" name="orchestrator-listener-purchaseorder_v2" />
+			</when>
+		</choice>
 			</when>
 		</choice>
 	</sub-flow>
@@ -98,7 +120,10 @@ output application/json
  )
 }]]></ee:set-payload>
 			</ee:message>
+			<ee:variables >
+			</ee:variables>
 		</ee:transform>
+		<set-variable value="GL_COMPLETO" doc:name="Set Variable" doc:id="23546d85-232b-4c8f-abdd-633a623fb171" variableName="oc_completa"/>
 		<foreach doc:name="By each Freight Bill Number" doc:id="d91b5f29-9dfa-4769-ab70-2c8b00c37ece" collection="#[payload.freight_bill_numbers.*freight_bill]">
 			<choice doc:name="IS Carrier Interco??" doc:id="74a68b26-d736-4b40-a262-d3d2e1bbeaac" >
 				<when expression='#[(sizeOf(payload.transaction) default 0) &gt; 0]'>
@@ -149,7 +174,7 @@ var filtroAnticipoMan ="AP_ADD_ANTICIPO"
        IM_PUR_GROUP: "116",
        IM_CURRENCY: payload.transaction[0].currency_code,
        IM_DOC_DATE: formatdate(now()>>'America/Mexico_City') default "",
-       IM_IHREZ: (vars.header_load.Load.system_load_id default "") ++ "-" ++ if ((vars.carrierCode_converter[0] default "") contains "MXS") vars.carrierCode_converter[0] default "" else vars.carrierCode_converter[0][3 to 9] default "", // Aqui antes tenia el numero de FreightBill
+       IM_IHREZ: (vars.header_load.Load.system_load_id default "") ++ "-" ++ if ((vars.carrierCode_converter[0] default "") contains "MXS") vars.carrierCode_converter[0] default "" else vars.carrierCode_converter[0][7 to 9] default "", // Aqui antes tenia el numero de FreightBill
        //IM_IHREZ: vars.header_load.Load.load_manual default "" ++ "-" ++ (random() * 1000) as  String {format: "0"} ,
        //IM_BELNR: vars.relatedShipment.Shipment.ReferenceNumber1 default "", // Aqui va el numero a cancelar de SAP Provision
        //IM_BELNR: if(p("purchase.refnum")== "prd") (vars.saveLoad.Load.ReferenceNumber1 default "") else (vars.saveLoad.Load.ReferenceNumber4 default ""),
@@ -222,7 +247,7 @@ var filtroAnticipoMan ="AP_ADD_ANTICIPO"
        IM_PUR_GROUP: "113",
        IM_CURRENCY: payload.transaction[0].currency_code,
        IM_DOC_DATE: formatdate(now()>>'America/Mexico_City') default "",
-       IM_IHREZ: (vars.header_load.Load.system_load_id default "") ++ "-" ++ if ((vars.carrierCode_converter[0] default "") contains "MXS") vars.carrierCode_converter[0] default "" else vars.carrierCode_converter[0][3 to 9] default "", // Aqui antes tenia el numero de FreightBill
+       IM_IHREZ: (vars.header_load.Load.system_load_id default "") ++ "-" ++ if ((vars.carrierCode_converter[0] default "") contains "MXS") vars.carrierCode_converter[0] default "" else vars.carrierCode_converter[0][7 to 9] default "", // Aqui antes tenia el numero de FreightBill
        //IM_IHREZ: vars.header_load.Load.load_manual default "" ++ "-" ++ (random() * 1000) as  String {format: "0"} ,
        //IM_BELNR: vars.relatedShipment.Shipment.ReferenceNumber1 default "", // Aqui va el numero a cancelar de SAP Provision
        //IM_BELNR: if(p("purchase.refnum")== "prd") (vars.saveLoad.Load.ReferenceNumber1 default "") else (vars.saveLoad.Load.ReferenceNumber4 default ""),
@@ -297,7 +322,7 @@ var filtroAnticipoMan ="AP_ADD_ANTICIPO"
        IM_PUR_GROUP: "113",
        IM_CURRENCY: payload.transaction[0].currency_code,
        IM_DOC_DATE: formatdate(now()>>'America/Mexico_City') default "",
-       IM_IHREZ: (vars.header_load.Load.system_load_id default "") ++ "-" ++ ( if ((vars.carrierCode_converter[0] default "") contains "MXS") vars.carrierCode_converter[0] default "" else ( (vars.carrierCode_converter[0][5 to 9] default "") ++ payload.type_transaction default "" ))  , 
+       IM_IHREZ: (vars.header_load.Load.system_load_id default "") ++ "-" ++ ( if ((vars.carrierCode_converter[0] default "") contains "MXS") vars.carrierCode_converter[0] default "" else ( (vars.carrierCode_converter[0][7 to 9] default "") ++ payload.type_transaction default "" ))  , 
        //IM_IHREZ: vars.header_load.Load.load_manual default "" ++ "-" ++ (random() * 1000) as  String {format: "0"} ,
        //IM_BELNR: vars.relatedShipment.Shipment.ReferenceNumber1 default "", // Aqui va el numero a cancelar de SAP Provision
        //IM_BELNR: if(p("purchase.refnum")== "prd") (vars.saveLoad.Load.ReferenceNumber1 default "") else (vars.saveLoad.Load.ReferenceNumber4 default ""),
@@ -369,6 +394,21 @@ var filtroAnticipoMan ="AP_ADD_ANTICIPO"
 			</choice>
 		</foreach>
 		<logger level="INFO" doc:name="Logger" doc:id="16be7019-d1cb-4ffa-8a8b-cc1eae41637b" />
+		<db:insert doc:name="Insert" doc:id="d7caa69b-aee1-4b6c-8011-1364dca99653" config-ref="Database_Config">
+			<db:sql ><![CDATA[insert into load_data (loadId,status,OC)
+values (:load,:status,:oc)
+ON DUPLICATE KEY UPDATE status=:status, OC=:oc]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	load:vars.header_load.Load.system_load_id,
+	status:vars.oc_completa,
+	oc:vars.OC_number
+}]]]></db:input-parameters>
+		</db:insert>
+		<choice doc:name="Choice" doc:id="308b3b26-06f1-4a63-acea-ffe2933c25a5" >
+			<when expression='#[vars.oc_completa == "GL_INCOMPLETO"]'>
+				<set-variable value="#[vars.oc_completa]" doc:name="Set Variable" doc:id="d50539cf-297d-41e3-a3cf-9544ececbf1a" variableName="OC_number"/>
+			</when>
+		</choice>
 		<ee:transform doc:name="Message Commit TMS" doc:id="e8b2abaf-5846-41a1-95bf-7d385df4a67e" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
@@ -489,7 +529,14 @@ output application/json
 	}
 }]]></ee:set-payload>
 					</ee:message>
+					<ee:variables >
+					</ee:variables>
 				</ee:transform>
+				<choice doc:name="Choice" doc:id="5bbfa324-65ab-4561-a37f-c238f17ff64a">
+					<when expression='payload.errors[0].message != "ERROR, Carta Porte/Referencia duplicada, No genera orden de compra!"'>
+						<set-variable value="GL_INCOMPLETO" doc:name="Set Variable" doc:id="567b85f8-1aeb-4fa8-8131-192528141954" variableName="oc_completa"/>
+					</when>
+				</choice>
 				<logger level="INFO" doc:name="Logger" doc:id="69ae2a0c-0111-40d8-8fea-c02b0cf92cc0" message="*********** Payload para Log #[payload]" />
 				<traxion-s-logger:logger-traxion messageType="JSON" doc:name="Logger traxion SAP Registro" doc:id="a1cc0d3c-3314-470e-84ff-110518bbfe12" config-ref="Traxion_s_logger_Config" activityName="Purchase-Order-SAP_Record_E" destinationName="${jms.queue.proccess.sap.logger}" writeInLog="${traxion.settings.logs.write}">
 					<traxion-s-logger:input-parameters >
