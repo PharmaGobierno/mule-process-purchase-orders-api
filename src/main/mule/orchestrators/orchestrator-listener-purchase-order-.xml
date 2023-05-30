@@ -144,7 +144,7 @@ output application/json
 			</traxion-s-logger:logger-traxion>
 					<flow-ref doc:name="orchestrator-listener-purchase-order-material_converter" doc:id="4e0a20ad-772d-48a7-9124-6278b8a82141" name="orchestrator-listener-purchase-order-material_converter" />
 					<choice doc:name="Choice" doc:id="b013744b-1512-4a3d-b416-693d0e5dd3e3">
-										<when expression='#[vars.header_load.Load.division_code == "CTL" and  vars.relatedShipment.Shipment.CreatedDateTime as Date &gt; ( p("temp.avior.golive") as Date{format:"yyyy-MM-dd"})]'>
+										<when expression='#[(vars.header_load.Load.division_code == "CTL" or vars.header_load.Load.division_code == "IM_S" ) and  vars.relatedShipment.Shipment.CreatedDateTime as Date &gt; ( p("temp.avior.golive") as Date{format:"yyyy-MM-dd"})]'>
 					<ee:transform doc:name="Create Purchase order Request" doc:id="5ea4e221-c5c3-4efc-8d30-ad95b010b5c9" >
 						<ee:message >
 							<ee:set-payload ><![CDATA[%dw 2.0
@@ -598,7 +598,7 @@ output application/json
 	"stk_number":vars.header_load.Load.system_load_id default "",
 	"society":"TL02",
 	"document_number":(vars.header_load.Load.provision_financials default "") replace ',' with(""),
-	"year_date":"2022"
+	"year_date":"2023"
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
@@ -613,7 +613,7 @@ output application/json
 	"stk_number":vars.header_load.Load.system_load_id default "",
 	"society":"TL01",
 	"document_number": ((vars.header_load.Load.provision_financials default "") splitBy(","))[0] ,
-	"year_date":(((vars.header_load.Load.provision_financials default "") splitBy(","))[1]) default "2022"
+	"year_date":(((vars.header_load.Load.provision_financials default "") splitBy(","))[1]) default "2023"
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
