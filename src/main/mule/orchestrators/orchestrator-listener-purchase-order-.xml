@@ -129,6 +129,7 @@ output application/json
 				<when expression='#[(sizeOf(payload.transaction) default 0) &gt; 0]'>
 					<set-variable value="#[payload.transaction.charge_id]" doc:name="Set Variable" doc:id="dff2fabe-5b4a-46e1-bffd-62185d5b59b1" variableName="systemGLTransactionIdArray" />
 					<set-variable value="#[payload]" doc:name="Set Variable" doc:id="cbe6487d-0ce7-4046-b9b5-dc0fdce1bb39" variableName="FreightBillMessage" />
+					<set-variable value="#[p('validation.txl.usa.settings.carriers') splitBy(&quot;,&quot;)]" doc:name="Set Variable txlUsaCarriers" doc:id="65e40fe6-80fc-431e-aaab-af0274dc89f6" variableName="txlUsaCarriers"/>
 					<logger level="INFO" doc:name="SystemLoadID" doc:id="89365080-ef54-4a12-afd9-800b5c8ce55c" message='#["system Load to OC " ++  (payload.transaction[0].load default "") ++ "-" ++( payload.carrier_code default "")]' />
 					<flow-ref doc:name="orchestrator-listener-purchase-carrier-converter" doc:id="8e20f181-f637-4f66-b6ce-49c42e387fcf" name="orchestrator-listener-purchase-carrier-converter" />
 					<traxion-s-logger:logger-traxion messageType="JSON" doc:name="Save TMS RS" doc:id="49044724-15ae-4f41-a44d-1981853c3898" config-ref="Traxion_s_logger_Config" activityName="Purchase-Order-TMS_RS" destinationName="${jms.queue.commons.logs}" writeInLog="${traxion.settings.logs.write}">
@@ -217,7 +218,7 @@ var filtroAnticipoMan ="AP_ADD_ANTICIPO"
 						</ee:message>
 					</ee:transform>
 				</when>
-						<when expression="#[1==2]">
+						<when expression="#[vars.txlUsaCarriers contains payload.carrier_code]">
 							<ee:transform doc:name="Transform Message" doc:id="a6ea3683-eef4-4d46-9b91-f2a3c0abadcb" >
 								<ee:message >
 									<ee:set-payload ><![CDATA[%dw 2.0
@@ -322,7 +323,7 @@ var filtroAnticipoMan ="AP_ADD_ANTICIPO"
        IM_PUR_GROUP: "113",
        IM_CURRENCY: payload.transaction[0].currency_code,
        IM_DOC_DATE: formatdate(now()>>'America/Mexico_City') default "",
-       IM_IHREZ: (vars.header_load.Load.system_load_id default "") ++ "-" ++ ( if ((vars.carrierCode_converter[0] default "") contains "MXS") vars.carrierCode_converter[0] default "" else ( (vars.carrierCode_converter[0][7 to 9] default "") ++ payload.type_transaction default "" ))  , 
+       IM_IHREZ: (vars.header_load.Load.system_load_id default "") ++ "-" ++ ( if ((vars.carrierCode_converter[0] default "") contains "MXS") "M" ++ vars.carrierCode_converter[0][4 to 6] default "" else ( (vars.carrierCode_converter[0][7 to 9] default "") )) ++ payload.type_transaction default "", 
        //IM_IHREZ: vars.header_load.Load.load_manual default "" ++ "-" ++ (random() * 1000) as  String {format: "0"} ,
        //IM_BELNR: vars.relatedShipment.Shipment.ReferenceNumber1 default "", // Aqui va el numero a cancelar de SAP Provision
        //IM_BELNR: if(p("purchase.refnum")== "prd") (vars.saveLoad.Load.ReferenceNumber1 default "") else (vars.saveLoad.Load.ReferenceNumber4 default ""),
