@@ -6,7 +6,7 @@
 http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 	<flow name="tms-out-sap-jms-listener-purchase-order" doc:id="6c470a88-01d7-433c-ba1e-ef6f1fc526e9" >
-		<jms:listener doc:name="listener message purchase order" doc:id="366d0d08-2708-402f-9e49-40a32c875322" config-ref="JMS_Config" destination="${jms.queue.system.tms.out.process.sap}" inboundContentType="application/json" selector="operation_name='processLoadRetrieveResponse' and status = 'S_COMPLETED' and ( financial_status = 'S_F_VOUCHER_CREATED' or  financial_status = 'S_F_VOUCHER_MATCHED')" numberOfConsumers="2">
+		<jms:listener doc:name="listener message purchase order" doc:id="366d0d08-2708-402f-9e49-40a32c875322" config-ref="JMS_Config" destination="${jms.queue.system.tms.out.process.sap}" inboundContentType="application/json" selector="operation_name='processLoadRetrieveResponse' and status = 'S_COMPLETED' and ( financial_status = 'S_F_VOUCHER_CREATED' or  financial_status = 'S_F_VOUCHER_MATCHED')">
 			<reconnect-forever />
 			<jms:consumer-type >
 				<jms:queue-consumer />
