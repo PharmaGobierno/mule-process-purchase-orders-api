@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<sub-flow name="clients-system-unigis-sap" doc:id="5d94abc7-f86f-49c3-ba63-a30c63be36c8" >
+		<http:request method="POST" doc:name="Request" doc:id="950bb8e5-3a2d-4d77-bcbb-4ac0bf58e887" config-ref="client-system-sapHTTP_Request_configuration" path="${client.system.sap.http.path.ordencompra}"/>
+	</sub-flow>
+</mule>

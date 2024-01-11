@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<sub-flow name="orchestrator-post-unigis-purchase-order" doc:id="47eb1bb4-3ce4-4c01-98f2-5562a9d5c306" >
+		<logger level="INFO" doc:name="Logger" doc:id="00375705-b889-46e1-b56d-6689d220e2ac" message="#[payload]"/>
+		<flow-ref doc:name="Call-clients-system-unigis-sap" doc:id="9e54df23-b6de-4f33-a685-b8a8b223cb02" name="clients-system-unigis-sap"/>
+		<logger level="INFO" doc:name="Logger" doc:id="4e8cc9e7-e16d-4f97-9290-a07c05d85bf9" message="#[payload]"/>
+	</sub-flow>
+</mule>
