@@ -6,7 +6,14 @@
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
 	<sub-flow name="clients_system-tms-mobile-main" doc:id="8758b804-19cd-4a15-bad3-89f08dfe5dc2" >
 		<try doc:name="Try" doc:id="48fba6c1-eb02-48b2-a395-c8d219da0440" >
-			<http:request method="POST" doc:name="Request" doc:id="c0ec7d07-1cd6-4d95-9f13-c58e0e0d0ea3" config-ref="HTTP_Request_configuration_system_tmsmobile" path="${client.system.tmsmobile.http.path.oc}"/>
+			<http:request method="POST" doc:name="Request" doc:id="c0ec7d07-1cd6-4d95-9f13-c58e0e0d0ea3" config-ref="HTTP_Request_configuration_system_tmsmobile" path="${client.system.tmsmobile.http.path.oc}">
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('client.tmsmobile.https.client_secret'),
+	"client_id" : p('client.tmsmobile.https.client_id')
+}]]]></http:headers>
+			</http:request>
 			<error-handler >
 				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="8fd6e6a6-01a9-4dee-b390-84fcdaad3332" >
 					<logger level="INFO" doc:name="Logger" doc:id="caee5bc6-d8fc-419a-8b91-ac638a569c9b"/>
