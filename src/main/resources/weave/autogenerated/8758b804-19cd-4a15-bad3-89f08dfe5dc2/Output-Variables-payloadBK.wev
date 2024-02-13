@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_8758b804_19cd_4a15_bad3_89f08dfe5dc2_Output_Variables_payloadBK = {| error: String | Null |}
+
