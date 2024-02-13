@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="orchestrator-post-txp-oc-main" doc:id="aa3b6786-1120-400e-8800-5463298d7532" >
+		<try doc:name="Try" doc:id="d9976033-47c9-4894-93e5-daae8926e841" >
+			<ee:transform doc:name="Transform Message" doc:id="e2a67e8a-5765-431c-a41a-ede64cf6edb4" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::util::Timer
+output application/json
+---
+{
+    "id": "",
+    "type": "blueyonder-load_oc_migo-created",
+    "timestamp": currentMilliseconds(),
+    "partition_key": vars.header_load.Load.system_load_id,
+    "load": {
+        "id": vars.header_load.Load.system_load_id,
+        "oc": ((vars.OC_number splitBy ",")[0]) splitBy "|",
+        "migo": ((vars.OC_number splitBy ",")[1]) splitBy "|"
+    }
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<logger level="INFO" doc:name="Logger" doc:id="65680397-e35e-4f76-a1ab-ec6bc8a38b00" message="#[payload]" />
+			<flow-ref doc:name="clients_system-tms-mobile-main" doc:id="1fca5793-bd68-4355-bbc2-6cbd2f4e2fad" name="clients_system-tms-mobile-main"/>
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="43fb9ef4-15a1-4239-b947-760ec6d6c90a" >
+					<logger level="INFO" doc:name="Logger" doc:id="53c5ccb4-063e-45e9-a539-dfbce500d5ed"/>
+				</on-error-continue>
+			</error-handler>
+		</try>
+	</sub-flow>
+</mule>

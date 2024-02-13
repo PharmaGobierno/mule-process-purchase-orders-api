@@ -421,11 +421,30 @@ output application/json
 	"ReferenceNumberCategoryEnumVal": "RNC_LD_LEG",
 	"ReferenceNumberEntityKey": vars.header_load.Load.system_load_id default "",
 	"ReferenceNumberTypeCode": "Financials_GL",
-	"ReferenceNumber": vars.OC_number default "",
+	"ReferenceNumber": vars.OC_number default ""
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
 		<flow-ref doc:name="clients-system-tms-update-referenceNumber" doc:id="4724384b-a51f-4ea0-bb27-9acc1d00a05f" name="clients-system-tms-update-referenceNumber" />
+		<ee:transform doc:name="Transform Message" doc:id="98bbf6da-66d8-4f0d-bece-c5b802a1961e" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="payloadBK" ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="orchestrator-post-txp-oc-main" doc:id="35ddfa76-7e1d-4040-b73e-f3fda125ae6e" name="orchestrator-post-txp-oc-main"/>
+		<ee:transform doc:name="Transform Message" doc:id="f1b23594-e6a4-4c1d-92b8-af61dff5da84" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+vars.payloadBK]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
 		<error-handler >
 			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="5cb709e0-cd3a-448c-bf42-ea7518261ce8" type="ANY">
 				<ee:transform doc:name="Transform Message" doc:id="d6da010d-4ebb-4dd5-9554-5079ff01c804">
