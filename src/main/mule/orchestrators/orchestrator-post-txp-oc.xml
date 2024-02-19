@@ -6,7 +6,63 @@
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 	<sub-flow name="orchestrator-post-txp-oc-main" doc:id="aa3b6786-1120-400e-8800-5463298d7532" >
 		<try doc:name="Try" doc:id="d9976033-47c9-4894-93e5-daae8926e841" >
-			<ee:transform doc:name="Transform Message" doc:id="e2a67e8a-5765-431c-a41a-ede64cf6edb4" >
+			<ee:transform doc:name="Split OC_Number" doc:id="02479156-a8f7-4e48-a8e5-47519af8df8d" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+vars.OC_number splitBy ("|")]]></ee:set-payload>
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="ocDMS" ><![CDATA[%dw 2.0
+output application/json
+---
+[]]]></ee:set-variable>
+					<ee:set-variable variableName="migoDMS" ><![CDATA[%dw 2.0
+output application/json
+---
+[]]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<foreach doc:name="For Each" doc:id="3f8190fa-f471-4940-a43b-d45bebd95600" >
+				<ee:transform doc:name="Split OC and MIGO" doc:id="907cb707-ffc5-4cdb-b7c9-dd346b321040" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload splitBy(",")]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<choice doc:name="Choice" doc:id="914ebaee-415e-45c1-9eb6-92972b8461c7" >
+					<when expression='#[payload[0] != "" and payload[0] != null]'>
+						<ee:transform doc:name="Save OC" doc:id="9374034b-83f4-4955-ba8c-88939abb7eb4" >
+							<ee:message >
+							</ee:message>
+							<ee:variables >
+								<ee:set-variable variableName="ocDMS" ><![CDATA[%dw 2.0
+output application/json
+---
+vars.ocDMS ++ [payload[0]]]]></ee:set-variable>
+							</ee:variables>
+						</ee:transform>
+					</when>
+				</choice>
+				<choice doc:name="Choice" doc:id="f3e03673-6403-43b3-b197-e2d3f02e0153" >
+					<when expression='#[payload[1] != "" and payload[1] != null]'>
+						<ee:transform doc:name="Save MIGO" doc:id="cd619418-87ae-422f-a4a2-2c5674ec85eb" >
+							<ee:message >
+							</ee:message>
+							<ee:variables >
+								<ee:set-variable variableName="migoDMS" ><![CDATA[%dw 2.0
+output application/json
+---
+vars.migoDMS ++ [payload[1]]]]></ee:set-variable>
+							</ee:variables>
+						</ee:transform>
+					</when>
+				</choice>
+			</foreach>
+			<ee:transform doc:name="Message to DMS" doc:id="e2a67e8a-5765-431c-a41a-ede64cf6edb4" >
 				<ee:message >
 					<ee:set-payload ><![CDATA[%dw 2.0
 import * from dw::util::Timer
@@ -19,8 +75,8 @@ output application/json
     "partition_key": vars.header_load.Load.system_load_id,
     "load": {
         "id": vars.header_load.Load.system_load_id,
-        "oc": ((vars.OC_number splitBy ",")[0]) splitBy "|",
-        "migo": ((vars.OC_number splitBy ",")[1]) splitBy "|"
+        "oc": vars.ocDMS,
+        "migo": vars.migoDMS
     }
 }]]></ee:set-payload>
 				</ee:message>
