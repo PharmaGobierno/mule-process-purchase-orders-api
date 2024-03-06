@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="orchestrator-post-purchase-order-external" doc:id="47eb1bb4-3ce4-4c01-98f2-5562a9d5c306" >
+		<logger level="INFO" doc:name="Logger" doc:id="00375705-b889-46e1-b56d-6689d220e2ac" message="#[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="b4f34588-d761-45e5-9d45-f78a148b3b85" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+import * from dw::core::Strings
+import withMaxSize from dw::core::Strings
+fun formatdate(d: DateTime) = d as String {
+       format: "yyyyMMdd"
+}
+       
+var filtroAnticipo ="ANTICIPO"
+var filtroAnticipoMan ="AP_ADD_ANTICIPO"
+---
+{
+	
+       IM_COMP_CODE: "TL01",
+       IM_DOC_TYPE: "ZTRA",
+       IM_CREAT_DATE: formatdate(now()>>'America/Mexico_City') default "",
+       IM_CREATED_BY: "TEST",
+       IM_VENDOR: "12345",
+       IM_PURCH_ORG: "1810",
+       IM_PUR_GROUP: "113",
+       IM_CURRENCY: payload.Load.currency_code,
+       IM_DOC_DATE: formatdate(now()>>'America/Mexico_City') default "",
+       IM_IHREZ: payload.Load.SystemLoadID,
+       IM_BELNR: "",
+       IM_GJAHR: "2024",
+       IM_POTEXTHEADER: payload.Load.SystemLoadID default "",
+       IM_COND_VALUE:  "",
+       IM_IT_ITEM: payload.Load.transaction map (item,index)->  {
+             IM_ITEM: leftPad ((index +1)*10,5,0),
+             IM_ADRN2: p("purchaseorder.imadrn2"),
+             IM_SHORT_TEXT: item.charge_cd ++ " Load " ++ (payload.Load.SystemLoadID  default ""),
+             IM_MATERIAL: "000000000003000476",
+             IM_PLANT: "1802",
+             IM_QUANTITY: "1.000",
+             IM_PO_UNIT: "SER",
+             IM_NET_PRICE: item.charged_amount,
+             IM_TAX_CODE: "W1",
+             IM_ACCTASSCAT: "K",
+             IM_FUND: "",
+             IM_FUNDS_CTR: "",
+             IM_DELIVERY_DATE: formatdate(now()>>'America/Mexico_City') default "",
+             IM_COSTCENTER: payload.Load.CeCo default "",
+             IM_EAN11: payload.Load.SystemLoadID,
+             IM_POTEXTITEM: item.charge_id,
+             IM_EM_ITEM_TEXT: "Load:" ++ (payload.Load.SystemLoadID default ""),
+       },
+       "EX_RETURN": {
+    "EX_ID_ORDEN_COMPRA": "",
+    "EX_STATUS": "",
+    "EX_IT_MENSAJE": [
+      {
+        "EX_ID_MSG": "",
+        "EX_DESC": ""
+      }
+    ]
+  }
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="call clients-system-sap-generatePurchaseOrder" doc:id="a484f77e-b9a6-49f6-8cc0-2569036d04c0" name="clients-system-sap-purchaseorder" />
+		<logger level="INFO" doc:name="Logger" doc:id="4e8cc9e7-e16d-4f97-9290-a07c05d85bf9" message="#[payload]"/>
+	</sub-flow>
+</mule>

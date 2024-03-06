@@ -127,6 +127,6 @@ output application/json
         <flow-ref doc:name="orchestrator-listener-purchase-order-start" doc:id="ab16900c-26bc-49e8-b7c5-a69f4d4314c0" name="orchestrator-listener-purchase-order-start" />
     </flow>
     <flow name="post:\unigis\purchase-orders:process-purchase-orders-api-config">
-		<flow-ref doc:name="Call-orchestrator-post-unigis-purchase-order" doc:id="c1ece7db-d9c7-4c97-be6d-530dbd2c54a8" name="orchestrator-post-unigis-purchase-order"/>
+		<flow-ref doc:name="Call-orchestrator-post-purchase-order-external" doc:id="c1ece7db-d9c7-4c97-be6d-530dbd2c54a8" name="orchestrator-post-purchase-order-external"/>
     </flow>
 </mule>

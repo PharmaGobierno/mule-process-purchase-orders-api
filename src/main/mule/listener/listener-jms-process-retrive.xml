@@ -14,5 +14,9 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 			<jms:response outboundContentType="application/json" />
 		</jms:listener>
 		<flow-ref doc:name="orchestrator-jms-start-transactions_purchase-order" doc:id="10a9bbe8-ff96-4c48-97e1-9457bccb0619" name="orchestrator-jms-start-transactions-purchase-order" />
+	</flow>
+	<flow name="purchase-order-external" doc:id="5763f6e0-9bdf-4467-a98c-265760cd59c0" >
+		<jms:listener doc:name="On New Message" doc:id="4682714c-d650-436b-a700-e136f70b8081" config-ref="JMS_Config" destination="${jms.queue.system.tms.out.process.sap}" selector="operation_name='purchaseOrder' and status = 'VOUCHER'"/>
+		<flow-ref doc:name="orchestrator-post-purchase-order-external" doc:id="1a72f4be-31c7-4b66-ba25-c57007a6da18" name="orchestrator-post-purchase-order-external"/>
 	</flow>	
 </mule>
