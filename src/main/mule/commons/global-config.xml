@@ -8,11 +8,11 @@ http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/m
 http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
 http://www.mulesoft.org/schema/mule/traxion-s-logger http://www.mulesoft.org/schema/mule/traxion-s-logger/current/mule-traxion-s-logger.xsd">
 	<configuration-properties doc:name="Configuration properties" doc:id="563f4dfa-f6eb-4602-affe-9dbfc28405a1" file="process-purchase-orders-${env}.properties" />
-	<global-property doc:name="Global Property" doc:id="ddfabc17-bb1e-4c04-8576-880e2ab84214" name="env" value="pro" />
+	<global-property doc:name="Global Property" doc:id="ddfabc17-bb1e-4c04-8576-880e2ab84214" name="env" value="uatdebug" />
 	<tls:context name="TLS_Context" doc:name="TLS Context" doc:id="85f982b9-e1c1-435c-838f-8df034c932e0" >
 		<tls:key-store type="pkcs12" path="Traxion_Logistics.p12" keyPassword="wWpg9LfX6nxh9Ke3u1L0wxSmYr5y3YKTjAWiTMEa9dww" password="wWpg9LfX6nxh9Ke3u1L0wxSmYr5y3YKTjAWiTMEa9dww" />
 	</tls:context>
-	<api-gateway:autodiscovery apiId="${anypoint.platform.autodiscovery.tst}" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="2c68f1a4-671c-49ff-b29c-a5ce6882877d" flowRef="process-purchase-orders-api-main" />
+	<api-gateway:autodiscovery apiId="${anypoint.platform.autodiscovery}" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="2c68f1a4-671c-49ff-b29c-a5ce6882877d" flowRef="process-purchase-orders-api-main" />
 	<jms:config name="JMS_Config_Logger" doc:name="JMS Config" doc:id="b0714266-c80d-42cc-92b2-999b9407058a" >
 		<jms:active-mq-connection username="${jms.settings.user}" password="${jms.settings.passwd}">
 			<jms:factory-configuration brokerUrl="${jms.settings.url}" />

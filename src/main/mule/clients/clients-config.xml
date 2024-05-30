@@ -29,4 +29,7 @@ http://www.mulesoft.org/schema/mule/traxion-s-logger http://www.mulesoft.org/sch
 		<http:request-connection host="${client.tms.shipments.host.tms.shipments}" maxConnections="${client.system-tms-connection.http.max.connections}" connectionIdleTimeout="${client.system-tms-connection.http.connection.idle.timeout}" responseBufferSize="${client.system-tms-connection.http.response.buffer.size}" protocol="HTTPS" tlsContext="TLS_Context" port="443"/>
 		<expiration-policy />
 	</http:request-config>
+	<http:request-config name="HTTP_Request_configuration_system_tmsmobile" doc:name="HTTP Request configuration" doc:id="aae77417-94b4-44db-be8f-3834623abc0f" >
+		<http:request-connection protocol="HTTPS" host="${client.system.tmsmobile.http.host}" port="443" maxConnections="${client.system.tmsmobile.max.connections}" connectionIdleTimeout="${client.system.tmsmobile.http.connection.idle.timeout}" responseBufferSize="${client.system.tmsmobile.http.response.buffer.size}" />
+	</http:request-config>
 </mule>
