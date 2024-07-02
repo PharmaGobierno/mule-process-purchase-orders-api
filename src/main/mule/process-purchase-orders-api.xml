@@ -3,7 +3,7 @@
     <http:listener-config name="process-purchase-orders-api-httpListenerConfig">
         <http:listener-connection host="0.0.0.0" port="8083" protocol="HTTPS" tlsContext="TLS_Context" />
     </http:listener-config>
-    <apikit:config name="process-purchase-orders-api-config" api="resource::ab8117f6-d718-4307-b5f7-03262d589cd0:process-purchase-orders-api:1.0.1:raml:zip:process-purchase-orders-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <apikit:config name="process-purchase-orders-api-config" api="resource::ab8117f6-d718-4307-b5f7-03262d589cd0:process-purchase-orders-api:1.0.3:raml:zip:process-purchase-orders-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
     <flow name="process-purchase-orders-api-main">
         <http:listener config-ref="process-purchase-orders-api-httpListenerConfig" path="/api/*">
             <http:response statusCode="#[vars.httpStatus default 200]">
@@ -126,7 +126,7 @@ output application/json
     <flow name="post:\sap\order\purchases:process-purchase-orders-api-config">
         <flow-ref doc:name="orchestrator-listener-purchase-order-start" doc:id="ab16900c-26bc-49e8-b7c5-a69f4d4314c0" name="orchestrator-listener-purchase-order-start" />
     </flow>
-    <flow name="post:\unigis\purchase-orders:process-purchase-orders-api-config">
-		<flow-ref doc:name="Call-orchestrator-post-purchase-order-external" doc:id="c1ece7db-d9c7-4c97-be6d-530dbd2c54a8" name="orchestrator-post-purchase-order-external"/>
+    <flow name="post:\sap\external\cost:process-purchase-orders-api-config">
+        <flow-ref doc:name="Call-orchestrator-post-purchase-order-external" doc:id="c1ece7db-d9c7-4c97-be6d-530dbd2c54a8" name="orchestrator-post-purchase-order-external" />
     </flow>
 </mule>

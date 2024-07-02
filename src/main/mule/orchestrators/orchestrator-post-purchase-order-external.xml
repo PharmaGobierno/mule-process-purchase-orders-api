@@ -70,6 +70,5 @@ var filtroAnticipoMan ="AP_ADD_ANTICIPO"
 			</ee:message>
 		</ee:transform>
 		<flow-ref doc:name="call clients-system-sap-generatePurchaseOrder" doc:id="a484f77e-b9a6-49f6-8cc0-2569036d04c0" name="clients-system-sap-purchaseorder" />
-		<logger level="INFO" doc:name="Logger" doc:id="4e8cc9e7-e16d-4f97-9290-a07c05d85bf9" message="#[payload]"/>
 	</sub-flow>
 </mule>

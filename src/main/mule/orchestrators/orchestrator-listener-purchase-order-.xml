@@ -135,7 +135,7 @@ output application/json
 					<traxion-s-logger:logger-traxion messageType="JSON" doc:name="Save TMS RS" doc:id="49044724-15ae-4f41-a44d-1981853c3898" config-ref="Traxion_s_logger_Config" activityName="Purchase-Order-TMS_RS" destinationName="${jms.queue.commons.logs}" writeInLog="${traxion.settings.logs.write}">
 				<traxion-s-logger:input-parameters>
 					<traxion-s-logger:input-parameter key="date" value="#[(now()&gt;&gt;'America/Mexico_City') as String {format: &quot;y-MM-dd&quot;}]" />
-					<traxion-s-logger:input-parameter key="reference3" value='#[vars.header_load.Load.centro_beneficios default ""]' />
+					<traxion-s-logger:input-parameter key="reference3" value='BY' />
 					<traxion-s-logger:input-parameter key="message_type" value="TMS Purchase Order" />
 					<traxion-s-logger:input-parameter key="reference1" value='#[payload.carrier_code default ""]' />
 					<traxion-s-logger:input-parameter key="source" value="Purchase Order" />
@@ -370,7 +370,7 @@ var filtroAnticipoMan ="AP_ADD_ANTICIPO"
 					<traxion-s-logger:logger-traxion messageType="JSON" doc:name="Save SAP RQ" doc:id="2d64ce5b-6b99-4010-86ed-6f4dc2993010" config-ref="Traxion_s_logger_Config" activityName="Purchase-Order-SAP_RQ" destinationName="${jms.queue.commons.logs}" writeInLog="${traxion.settings.logs.write}">
 				<traxion-s-logger:input-parameters>
 					<traxion-s-logger:input-parameter key="date" value="#[(now()&gt;&gt;'America/Mexico_City') as String {format: &quot;y-MM-dd&quot;}]" />
-					<traxion-s-logger:input-parameter key="reference3" value='#[vars.header_load.Load.centro_beneficios default ""]' />
+					<traxion-s-logger:input-parameter key="reference3" value='BY' />
 					<traxion-s-logger:input-parameter key="message_type" value="Request" />
 					<traxion-s-logger:input-parameter key="reference1" value='#[vars.FreightBillMessage.type_transaction default ""]' />
 					<traxion-s-logger:input-parameter key="source" value="Purchase Order" />
@@ -382,7 +382,7 @@ var filtroAnticipoMan ="AP_ADD_ANTICIPO"
 					<traxion-s-logger:logger-traxion messageType="JSON" doc:name="Save SAP RS" doc:id="0077a906-b62d-4a29-ac01-7c4d3fb8034b" config-ref="Traxion_s_logger_Config" activityName="Purchase-Order-SAP_RQ" destinationName="${jms.queue.commons.logs}" writeInLog="${traxion.settings.logs.write}">
 				<traxion-s-logger:input-parameters>
 					<traxion-s-logger:input-parameter key="date" value="#[(now()&gt;&gt;'America/Mexico_City') as String {format: &quot;y-MM-dd&quot;}]" />
-					<traxion-s-logger:input-parameter key="reference3" value='#[vars.header_load.Load.centro_beneficios default ""]' />
+					<traxion-s-logger:input-parameter key="reference3" value='BY' />
 					<traxion-s-logger:input-parameter key="message_type" value="Response" />
 					<traxion-s-logger:input-parameter key="reference1" value='#[vars.FreightBillMessage.type_transaction default ""]' />
 					<traxion-s-logger:input-parameter key="source" value="Purchase Order" />
