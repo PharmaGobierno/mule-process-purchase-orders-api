@@ -7,9 +7,72 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 	<sub-flow name="orchestrator-post-purchase-order-external" doc:id="47eb1bb4-3ce4-4c01-98f2-5562a9d5c306" >
 		<logger level="INFO" doc:name="Logger" doc:id="00375705-b889-46e1-b56d-6689d220e2ac" message="#[payload]"/>
-		<ee:transform doc:name="Transform Message" doc:id="b4f34588-d761-45e5-9d45-f78a148b3b85" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+		<choice doc:name="Choice" doc:id="a6dac7e9-99d4-4f57-8083-78259bc37866">
+			<when expression='attributes.queryParams.srcSystem == "VM"'>
+				<ee:transform doc:name="Build Request" doc:id="1e053552-31b1-4916-ba63-976e7e3787af">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+import * from dw::core::Strings
+import withMaxSize from dw::core::Strings
+fun formatdate(d: DateTime) = d as String {
+       format: "yyyyMMdd"
+}
+---
+{
+	
+       IM_COMP_CODE: "VM00",
+       IM_DOC_TYPE: "ZTRA",
+       IM_CREAT_DATE: formatdate(now()>>'America/Mexico_City') default "",
+       IM_CREATED_BY: "VModal",
+       IM_VENDOR: payload.Load.carrierCode,
+       IM_PURCH_ORG: "1810",
+       IM_PUR_GROUP: "113",
+       IM_CURRENCY: payload.Load.currencyCode,
+       IM_DOC_DATE: formatdate(now()>>'America/Mexico_City') default "",
+       IM_IHREZ: payload.Load.VMXId,
+       IM_BELNR: "",
+       IM_GJAHR: "2024",
+       IM_POTEXTHEADER: payload.Load.VMX default "",
+       IM_COND_VALUE:  "",
+       IM_IT_ITEM: payload.Load.transaction map (item,index)->  {
+             IM_ITEM: leftPad ((index +1)*10,5,0),
+             IM_ADRN2: p("purchaseorder.imadrn2"),
+             IM_SHORT_TEXT: item.chargeDesc default ""),
+             IM_MATERIAL: item.Material,
+             IM_PLANT: "1802",
+             IM_QUANTITY: "1.000",
+             IM_PO_UNIT: "SER",
+             IM_NET_PRICE: item.charged_amount,
+             IM_TAX_CODE: "W1",
+             IM_ACCTASSCAT: "K",
+             IM_FUND: "",
+             IM_FUNDS_CTR: "",
+             IM_DELIVERY_DATE: formatdate(now()>>'America/Mexico_City') default "",
+             IM_COSTCENTER: payload.Load.CeCo default "",
+             IM_EAN11: payload.Load.VMXId,
+             IM_POTEXTITEM: item.charge_id,
+             IM_EM_ITEM_TEXT: "VMX:" ++ (payload.Load.VMX default ""),
+       },
+       "EX_RETURN": {
+    "EX_ID_ORDEN_COMPRA": "",
+    "EX_STATUS": "",
+    "EX_IT_MENSAJE": [
+      {
+        "EX_ID_MSG": "",
+        "EX_DESC": ""
+      }
+    ]
+  }
+}
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<when expression='attributes.queryParams.srcSystem == "MD"' >
+				<ee:transform doc:name="Transform Message" doc:id="b4f34588-d761-45e5-9d45-f78a148b3b85">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 import * from dw::core::Strings
 import withMaxSize from dw::core::Strings
@@ -22,11 +85,11 @@ var filtroAnticipoMan ="AP_ADD_ANTICIPO"
 ---
 {
 	
-       IM_COMP_CODE: "TL01",
+       IM_COMP_CODE: "MD00",
        IM_DOC_TYPE: "ZTRA",
        IM_CREAT_DATE: formatdate(now()>>'America/Mexico_City') default "",
-       IM_CREATED_BY: "TEST",
-       IM_VENDOR: "12345",
+       IM_CREATED_BY: "Medistik",
+       IM_VENDOR: payload.Load.carrierCode,
        IM_PURCH_ORG: "1810",
        IM_PUR_GROUP: "113",
        IM_CURRENCY: payload.Load.currency_code,
@@ -69,6 +132,11 @@ var filtroAnticipoMan ="AP_ADD_ANTICIPO"
 ]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="Logger" doc:id="a1a5e269-012e-46fa-97dc-4729da294a2d" message="***************************** Invalid srcSystem  *************************************" />
+			</otherwise>
+		</choice>
 		<flow-ref doc:name="call clients-system-sap-generatePurchaseOrder" doc:id="a484f77e-b9a6-49f6-8cc0-2569036d04c0" name="clients-system-sap-purchaseorder" />
 	</sub-flow>
 </mule>
