@@ -22,7 +22,7 @@ fun formatdate(d: DateTime) = d as String {
 {
 	
        IM_COMP_CODE: "VM00",
-       IM_DOC_TYPE: "ZTRA",
+       IM_DOC_TYPE: if (payload.Load.serviceType == "Origen") "ZVMO" else if (payload.Load.serviceType == "Destino") "ZVMD" else "ZVMO",
        IM_CREAT_DATE: formatdate(now()>>'America/Mexico_City') default "",
        IM_CREATED_BY: "VModal",
        IM_VENDOR: payload.Load.carrierCode,
@@ -38,7 +38,7 @@ fun formatdate(d: DateTime) = d as String {
        IM_IT_ITEM: payload.Load.transaction map (item,index)->  {
              IM_ITEM: leftPad ((index +1)*10,5,0),
              IM_ADRN2: p("purchaseorder.imadrn2"),
-             IM_SHORT_TEXT: item.chargeDesc default ""),
+             IM_SHORT_TEXT: item.chargeDesc default "",
              IM_MATERIAL: item.Material,
              IM_PLANT: "1802",
              IM_QUANTITY: "1.000",
