@@ -40,7 +40,7 @@ fun formatdate(d: DateTime) = d as String {
              IM_ADRN2: p("purchaseorder.imadrn2"),
              IM_SHORT_TEXT: item.chargeDesc default "",
              IM_MATERIAL: leftPad(item.Material,18,0),
-             IM_PLANT: "1802",
+             IM_PLANT: "3001",
              IM_QUANTITY: "1.000",
              IM_PO_UNIT: "SER",
              IM_NET_PRICE: item.chargedAmt,
