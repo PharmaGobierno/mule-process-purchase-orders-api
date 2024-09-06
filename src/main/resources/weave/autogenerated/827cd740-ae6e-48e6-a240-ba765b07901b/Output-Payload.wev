@@ -1,4 +1,0 @@
-%dw 2.0
-
-type auto_827cd740_ae6e_48e6_a240_ba765b07901b_Output_Payload = {| error: String | Null |}
-

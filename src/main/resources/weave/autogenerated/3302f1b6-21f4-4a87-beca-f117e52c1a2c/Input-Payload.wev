@@ -1,4 +1,0 @@
-%dw 2.0
-
-type auto_3302f1b6_21f4_4a87_beca_f117e52c1a2c_Input_Payload = Any
-

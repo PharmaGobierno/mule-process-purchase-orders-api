@@ -1,4 +1,0 @@
-%dw 2.0
-
-type auto_517879eb_77b0_41db_957d_e14f5cbdc519_Output_Payload = Array<Nothing>
-

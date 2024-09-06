@@ -1,4 +1,0 @@
-%dw 2.0
-
-type auto_dc722d72_b668_4bd5_929b_587f2efe1594_Output_Variables_cancelDbResponse = Any
-

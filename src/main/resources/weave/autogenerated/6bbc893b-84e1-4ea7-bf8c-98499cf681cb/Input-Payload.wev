@@ -1,9 +1,0 @@
-%dw 2.0
-
-type auto_6bbc893b_84e1_4ea7_bf8c_98499cf681cb_Input_Payload = {|
-  provider_account_number: Any, 
-  society: Any, 
-  reference_document_number: Any, 
-  exercise: String
-|}
-

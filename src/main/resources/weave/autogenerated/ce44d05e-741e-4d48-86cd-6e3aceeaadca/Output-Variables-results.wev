@@ -1,4 +1,0 @@
-%dw 2.0
-
-type auto_ce44d05e_741e_4d48_86cd_6e3aceeaadca_Output_Variables_results = Array<Nothing>
-
