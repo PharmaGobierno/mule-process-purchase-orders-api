@@ -166,7 +166,7 @@ fun formatyear(d: DateTime) = d as String {
 				<traxion-s-logger:input-parameter key="reference2" value="#[correlationId]" />
 			</traxion-s-logger:input-parameters>
 		</traxion-s-logger:logger-traxion>
-		<traxion-s-logger:logger-traxion messageType="JSON" doc:name="Auditoria - SAP Record" doc:id="1842caf6-f035-42e6-8a46-41791d66f4f5" config-ref="Traxion_s_logger_Config" activityName="Provision-cost-SAP_Record" destinationName="${jms.queue.proccess.sap.logger}" writeInLog="${traxion.settings.logs.write}" >
+		<traxion-s-logger:logger-traxion messageType="JSON" doc:name="Auditoria - SAP Record" doc:id="1842caf6-f035-42e6-8a46-41791d66f4f5" config-ref="Traxion_s_logger_Config" activityName="Purchase-Order-SAP_Record" destinationName="${jms.queue.proccess.sap.logger}" writeInLog="${traxion.settings.logs.write}" >
 			<traxion-s-logger:message ><![CDATA[#[%dw 2.0
 import * from dw::core::Strings
 output application/json
