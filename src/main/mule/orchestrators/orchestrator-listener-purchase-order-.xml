@@ -71,7 +71,9 @@ payload reduce ((val, acc) -> acc ++ val)]]></ee:set-payload>
 	<flow name="orchestrator-listener-purchaseorder_v2" doc:id="b5caaa2b-72f6-4f55-bc6b-0726f913f7b9" >
 		<ee:transform doc:name="Group by Carrier code" doc:id="f53c18aa-1225-4589-b83b-44a3d54579bb">
 			<ee:message>
-				<ee:set-payload><![CDATA[%dw 2.0
+				<ee:set-payload><![CDATA[
+
+%dw 2.0
 output application/json
 ---
 {
@@ -79,7 +81,7 @@ output application/json
  	"freight_bill": {
  	"carrier_code":carrier_code,	
  	   "type_transaction":"A",
- 	"transaction": voucher.*VoucherCharge filter ($.ChargeCode != null and ( $.ChargeLevelEnumVal == 'CHL_OPTION'  and $.ChargeCode != 'AJUSTE_FLETE')   ) map ((item, index) -> 
+ 	"transaction": voucher.*VoucherCharge filter ($.ChargeCode != null and ( $.ChargeLevelEnumVal == 'CHL_OPTION'  and $.ChargeCode != 'AJUSTE_FLETE' and $.ChargeCode != 'PENALIZACION')   ) map ((item, index) -> 
      {
       
          "charge_id":item.SystemChargeDetailID,
@@ -99,7 +101,7 @@ output application/json
      "freight_bill": {
  	"carrier_code":carrier_code,
  	   "type_transaction":"F",	
- 	"transaction": voucher.*VoucherCharge filter ($.ChargeCode != null and ( $.ChargeLevelEnumVal == 'CHL_CONDITION' or ($.ChargeLevelEnumVal=='CHL_OPTION' and $.ChargeCode=='AJUSTE_FLETE')) ) map ((item, index) -> 
+ 	"transaction": voucher.*VoucherCharge filter ($.ChargeCode != null and ( $.ChargeLevelEnumVal == 'CHL_CONDITION' or ($.ChargeLevelEnumVal=='CHL_OPTION' and ($.ChargeCode=='AJUSTE_FLETE' or $.ChargeCode=='PENALIZACION'))) ) map ((item, index) -> 
      {
 
          "charge_id":item.SystemChargeDetailID,

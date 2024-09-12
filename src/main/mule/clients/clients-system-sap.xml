@@ -216,7 +216,8 @@ output application/java
 			<http:query-params ><![CDATA[#[output application/java
 ---
 {
-	"action" : "ordencompra"
+	"action" : "ordencompra",
+	srcSystem : attributes.queryParams.srcSystem default "BY"
 }]]]></http:query-params>
 		</http:request>
 		<ee:transform doc:name="Transform Message" doc:id="5ba04343-32d7-428b-8b2e-72d567345aee" >

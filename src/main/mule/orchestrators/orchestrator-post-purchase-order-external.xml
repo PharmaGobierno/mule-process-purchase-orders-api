@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:traxion-s-logger="http://www.mulesoft.org/schema/mule/traxion-s-logger" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:process-provision-cost-api="http://www.mulesoft.org/schema/mule/process-provision-cost-api" xmlns:traxion-s-logger="http://www.mulesoft.org/schema/mule/traxion-s-logger"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
-http://www.mulesoft.org/schema/mule/traxion-s-logger http://www.mulesoft.org/schema/mule/traxion-s-logger/current/mule-traxion-s-logger.xsd">
+http://www.mulesoft.org/schema/mule/traxion-s-logger http://www.mulesoft.org/schema/mule/traxion-s-logger/current/mule-traxion-s-logger.xsd
+http://www.mulesoft.org/schema/mule/process-provision-cost-api http://www.mulesoft.org/schema/mule/process-provision-cost-api/current/mule-process-provision-cost-api.xsd">
 	<sub-flow name="orchestrator-post-purchase-order-external" doc:id="47eb1bb4-3ce4-4c01-98f2-5562a9d5c306" >
 		<logger level="INFO" doc:name="Logger" doc:id="00375705-b889-46e1-b56d-6689d220e2ac" message="#[payload]"/>
 		<set-variable value="#[attributes.queryParams.srcSystem]" doc:name="Set Variable" doc:id="0a5c45a8-60bc-46ff-ae68-f1310fdd73e2" variableName="srcSystem"/>
@@ -136,6 +137,17 @@ fun formatyear(d: DateTime) = d as String {
 }
 ]]></ee:set-payload>
 					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="payloadCancel" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	Load:{
+		"VMXId":payload.Load.VMXId
+	}
+}
+]]></ee:set-variable>
+					</ee:variables>
 				</ee:transform>
 			</when>
 			<otherwise>
@@ -189,79 +201,15 @@ output application/json
 				<traxion-s-logger:input-parameter key="type" value="DB" />
 			</traxion-s-logger:input-parameters>
 		</traxion-s-logger:logger-traxion>
-	</sub-flow>
-	<sub-flow name="orchestrator-post-purchase-order-validator" doc:id="18f18101-8bb8-4120-a02c-12e3d53d1b07" >
 		<choice doc:name="Choice" doc:id="505180fc-c04f-4b17-9663-9bee67feafc9">
 			<when expression='#[payload.d.EX_RETURN.EX_STATUS == "S"]'>
 				<logger level="INFO" doc:name="Logger" doc:id="2402c93c-1b04-4543-a84e-372e83ded45e" message="#['\n'] ********** El valor de ExStatus es: #[payload.d.EX_RETURN.EX_STATUS] **********  #['\n']" />
-				<ee:transform doc:name="Transform Message" doc:id="18b62068-900a-4570-9583-fc17ff6da306">
-					<ee:message>
-						<ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-	"srcSystem": attributes.queryParams.srcSystem,
-	"loadId": vars.sapRQ.IM_IHREZ default "",
-	"carrierDescription": vars.header_load.Load.carrier_code default "",
-	"carrierCode": vars.sapRQ.IM_VENDOR default "",
-	"profitCenter":vars.header_load.Load.centro_beneficios default "",
-	"monto": vars.originalRequest.chargedAmount,
-	"montoNegativo": "",
-	"moneda": vars.sapRQ.IM_CURRENCY default "",
-	"total": "",
-	"numeroDocSap": vars.responsesap.d.EX_RETURN.EX_ID_ORDEN_COMPRA default "",
-	"numeroDocMigo": (vars.responsesap.d.EX_RETURN.EX_IT_MENSAJE.results filter ($.EX_ID_MSG == 'MGO' ))[0].EX_DESC,
-	"statusSap": vars.responsesap.d.EX_RETURN.EX_STATUS default "",
-	"statusCommit": "",
-	"sap_socity": vars.sap_socity default ""
-}]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
-				<traxion-s-logger:logger-traxion messageType="JSON" doc:name="Logger traxion SAP Registro" doc:id="06b0d93b-2ad6-46f9-b87a-5245f9c49404" config-ref="Traxion_s_logger_Config" activityName="Purchase-Order-SAP_Record" destinationName="${jms.queue.proccess.sap.logger}" writeInLog="${traxion.settings.logs.write}">
-					<traxion-s-logger:input-parameters>
-						<traxion-s-logger:input-parameter key="correlation_id" value="#[correlationId]" />
-						<traxion-s-logger:input-parameter key="type" value="DB" />
-					</traxion-s-logger:input-parameters>
-				</traxion-s-logger:logger-traxion>
-				<flow-ref doc:name="call orchestrator-listener-cancel_provision" doc:id="dc055c36-1970-484d-8d98-efb7c3953627" name="orchestrator-listener-cancel_provision" />
+				<process-provision-cost-api:cancel-cost-provision-external doc:name="Cancel cost provision external1" doc:id="945e35fd-59ce-4c70-a434-04dc87b3500f" config-ref="Process_provision_cost_api_Config" operation-type="provisionCostCancel" src-system="#[vars.srcSystem]" client-id="#[p('client.process.provision.cost.https.client.id')]" client-secret="#[p('client.process.provision.cost.https.client.secret')]">
+			<process-provision-cost-api:cancel-cost-provision-external-request-data><![CDATA[#[vars.payloadCancel]]]></process-provision-cost-api:cancel-cost-provision-external-request-data>
+		</process-provision-cost-api:cancel-cost-provision-external>
 			</when>
 			<otherwise>
 				<logger level="INFO" doc:name="Logger" doc:id="7436616d-249b-489b-a366-27c31616b401" message="#['\n'] ********** El valor de ExStatus es: #[payload.d.EX_RETURN.EX_STATUS] **********  #['\n']" />
-				<ee:transform doc:name="Transform Message" doc:id="3233ba10-0116-4372-a037-81d88640d863">
-					<ee:message>
-						<ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-	
-	"loadId": vars.system default "",
-	"carrierDescription": vars.header_load.Load.carrier_code default "",
-	"carrierCode": vars.header_load.Load.carrier_code default "",
-	"profitCenter":vars.header_load.Load.centro_beneficios default "",
-	"monto": sum  (vars.FreightBillMessage.transaction.charged_amount default 0  ) default 0 ,
-	"montoNegativo": "",
-	"moneda": vars.header_load.Load.currency_code default "",
-	"total": "",
-	"numeroDocSap": vars.responsesap.d.EX_RETURN.EX_ID_ORDEN_COMPRA default "",
-	"numeroDocMigo": (vars.responsesap.d.EX_RETURN.EX_IT_MENSAJE.results filter ($.EX_ID_MSG == 'MGO' ))[0].EX_DESC default "",
-	"statusSap": "E",
-	"statusCommit": "",
-	"sap_socity": vars.sap_socity default "",
-	errors: payload.d.EX_RETURN.EX_IT_MENSAJE.results map ( result , indexOfResult ) -> {
-		code: result.EX_ID_MSG,
-		message: result.EX_DESC
-	}
-}]]></ee:set-payload>
-					</ee:message>
-					<ee:variables >
-					</ee:variables>
-				</ee:transform>
-				<traxion-s-logger:logger-traxion messageType="JSON" doc:name="Logger traxion SAP Registro" doc:id="fe1e6166-c738-467e-9575-3389976997b6" config-ref="Traxion_s_logger_Config" activityName="Purchase-Order-SAP_Record_E" destinationName="${jms.queue.proccess.sap.logger}" writeInLog="${traxion.settings.logs.write}">
-					<traxion-s-logger:input-parameters >
-						<traxion-s-logger:input-parameter key="correlation_id" value="#[correlationId]" />
-						<traxion-s-logger:input-parameter key="type" value="DB" />
-					</traxion-s-logger:input-parameters>
-				</traxion-s-logger:logger-traxion>
 			</otherwise>
 		</choice>
 	</sub-flow>
