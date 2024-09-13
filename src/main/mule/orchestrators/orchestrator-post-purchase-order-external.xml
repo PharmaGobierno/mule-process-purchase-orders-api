@@ -95,7 +95,7 @@ fun formatyear(d: DateTime) = d as String {
        IM_DOC_TYPE: if (payload.Load.serviceType == "Origen") "ZVMO" else if (payload.Load.serviceType == "Destino") "ZVMD" else "ZVMO",
        IM_CREAT_DATE: formatdate(now()>>'America/Mexico_City') default "",
        IM_CREATED_BY: "VModal",
-       IM_VENDOR: leftPad(payload.Load.carrierCode,10,0),
+       IM_VENDOR: if (payload.Load.carrierCode contains("MXS")) payload.Load.carrierCode else leftPad(payload.Load.carrierCode,10,0),
        IM_PURCH_ORG: "3001",
        IM_PUR_GROUP: "113",
        IM_CURRENCY: payload.Load.currencyCode,
