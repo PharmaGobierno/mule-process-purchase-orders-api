@@ -56,3 +56,13 @@ fun getCentroSUVI(profitCenter: String)
 =if(profitCenter[8 to 9]=="01")"1121" else
 if(profitCenter[8 to 9]=="02")"1122" else
 if(profitCenter[8 to 9]=="03")"1120" else "0"
+
+fun getVMTax(carrier: String)
+=if(carrier == "309001125")"W3" else
+if(carrier == "309002579")"W3" else
+if(carrier == "309002578")"W3" else
+if(carrier == "309002619")"W3" else
+if(carrier == "309002646")"W0" else
+if(carrier == "309002573")"W0" else
+if(carrier == "325001644")"W0" else
+if(carrier == "325005317")"W0" else "W1"

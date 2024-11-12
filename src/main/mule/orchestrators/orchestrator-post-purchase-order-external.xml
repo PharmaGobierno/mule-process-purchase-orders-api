@@ -82,6 +82,7 @@ fun formatyear(d: DateTime) = d as String {
 output application/json
 import * from dw::core::Strings
 import withMaxSize from dw::core::Strings
+import modules::myGlobalFunctions as globalFunctions
 fun formatdate(d: DateTime) = d as String {
        format: "yyyyMMdd"
 }
@@ -114,7 +115,7 @@ fun formatyear(d: DateTime) = d as String {
              IM_QUANTITY: "1.000",
              IM_PO_UNIT: "SER",
              IM_NET_PRICE: item.chargedAmt,
-             IM_TAX_CODE: "W1",
+             IM_TAX_CODE: globalFunctions::getVMTax(payload.Load.carrierCode),
              IM_ACCTASSCAT: "K",
              IM_FUND: "",
              IM_FUNDS_CTR: "",
