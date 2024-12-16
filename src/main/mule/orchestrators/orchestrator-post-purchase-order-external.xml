@@ -139,12 +139,12 @@ fun formatyear(d: DateTime) = d as String {
 ]]></ee:set-payload>
 					</ee:message>
 					<ee:variables >
-						<ee:set-variable variableName="payloadCancel" ><![CDATA[%dw 2.0
+						<ee:set-variable variableName="cancelations" ><![CDATA[%dw 2.0
 output application/json
 ---
 {
 	Load:{
-		"VMXId":payload.Load.VMXId
+		"VMXId":payload.Load.cancelations
 	}
 }
 ]]></ee:set-variable>
@@ -207,9 +207,36 @@ output application/json
 			<choice doc:name="Choice" doc:id="505180fc-c04f-4b17-9663-9bee67feafc9">
 			<when expression='#[payload.d.EX_RETURN.EX_STATUS == "S"]'>
 				<logger level="INFO" doc:name="Logger" doc:id="2402c93c-1b04-4543-a84e-372e83ded45e" message="#['\n'] ********** El valor de ExStatus es: #[payload.d.EX_RETURN.EX_STATUS] **********  #['\n']" />
-				<process-provision-cost-api:cancel-cost-provision-external doc:name="Cancel cost provision external1" doc:id="945e35fd-59ce-4c70-a434-04dc87b3500f" config-ref="Process_provision_cost_api_Config" operation-type="provisionCostCancel" src-system="#[vars.srcSystem]" client-id="#[p('client.process.provision.cost.https.client.id')]" client-secret="#[p('client.process.provision.cost.https.client.secret')]">
+					<choice doc:name="Choice" doc:id="080dbc87-a06a-417d-a562-d5532f5b5445" >
+						<when expression='attributes.queryParams.srcSystem == "VM"' >
+							<logger level="INFO" doc:name="Logger" doc:id="f5576431-b220-4837-9bcc-44c25015969f" />
+							<foreach doc:name="For Each" doc:id="c1317bc3-06d4-4578-b926-efbba777f55f" collection="#[vars.cancelations]">
+								<ee:transform doc:name="Build Request" doc:id="9f461d80-c0ff-4871-b6f1-1d06f3973b3b">
+								<ee:message>
+								</ee:message>
+								<ee:variables>
+									<ee:set-variable variableName="payloadCancel"><![CDATA[%dw 2.0
+output application/json
+---
+{
+	Load:{
+		"VMXId":payload.VMXId
+	}
+}
+]]></ee:set-variable>
+								</ee:variables>
+							</ee:transform>
+								<process-provision-cost-api:cancel-cost-provision-external doc:name="Cancel cost provision external" doc:id="7c0556e0-8e5b-4d61-b978-cdf0113c5d15" config-ref="Process_provision_cost_api_Config" operation-type="provisionCostCancel" src-system="#[vars.srcSystem]" client-id="#[p('client.process.provision.cost.https.client.id')]" client-secret="#[p('client.process.provision.cost.https.client.secret')]" >
+									<process-provision-cost-api:cancel-cost-provision-external-request-data ><![CDATA[#[vars.payloadCancel]]]></process-provision-cost-api:cancel-cost-provision-external-request-data>
+								</process-provision-cost-api:cancel-cost-provision-external>
+							</foreach>
+						</when>
+						<otherwise >
+							<process-provision-cost-api:cancel-cost-provision-external doc:name="Cancel cost provision external1" doc:id="945e35fd-59ce-4c70-a434-04dc87b3500f" config-ref="Process_provision_cost_api_Config" operation-type="provisionCostCancel" src-system="#[vars.srcSystem]" client-id="#[p('client.process.provision.cost.https.client.id')]" client-secret="#[p('client.process.provision.cost.https.client.secret')]">
 			<process-provision-cost-api:cancel-cost-provision-external-request-data><![CDATA[#[vars.payloadCancel]]]></process-provision-cost-api:cancel-cost-provision-external-request-data>
 		</process-provision-cost-api:cancel-cost-provision-external>
+						</otherwise>
+					</choice>
 			</when>
 			<otherwise>
 				<logger level="INFO" doc:name="Logger" doc:id="7436616d-249b-489b-a366-27c31616b401" message="#['\n'] ********** El valor de ExStatus es: #[payload.d.EX_RETURN.EX_STATUS] **********  #['\n']" />

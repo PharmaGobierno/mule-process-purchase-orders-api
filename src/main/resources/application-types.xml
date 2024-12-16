@@ -2755,4 +2755,5 @@ type auto_e375e459_6dde_4c4c_abf3_d302656d370b_Output_Variables_payloadBK = {| e
       </types:output-event>
     </types:processor-declaration>
   </types:enrichment>
+  <types:enrichment select="#9f461d80-c0ff-4871-b6f1-1d06f3973b3b"/>
 </types:mule>
