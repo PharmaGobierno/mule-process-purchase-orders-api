@@ -12,7 +12,7 @@ http://www.mulesoft.org/schema/mule/process-provision-cost-api http://www.muleso
 		<set-variable value="#[attributes.queryParams.srcSystem]" doc:name="Set Variable" doc:id="0a5c45a8-60bc-46ff-ae68-f1310fdd73e2" variableName="srcSystem"/>
 		<choice doc:name="Choice" doc:id="a6dac7e9-99d4-4f57-8083-78259bc37866">
 			<when expression='attributes.queryParams.srcSystem == "MD"' >
-				<ee:transform doc:name="Transform Message" doc:id="b4f34588-d761-45e5-9d45-f78a148b3b85">
+				<!-- [STUDIO:"Transform Message"]<ee:transform doc:name="Transform Message" doc:id="b4f34588-d761-45e5-9d45-f78a148b3b85">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -24,7 +24,7 @@ fun formatdate(d: DateTime) = d as String {
 fun formatyear(d: DateTime) = d as String {
        format: "yyyy"
 }
----
+&#45;&#45;-
 {
 	
        IM_COMP_CODE: "MD00",
@@ -68,12 +68,74 @@ fun formatyear(d: DateTime) = d as String {
         "EX_ID_MSG": "",
         "EX_DESC": ""
       }
+    &#93;
+  }
+}
+&#93;&#93;></ee:set-payload>
+			</ee:message>
+		</ee:transform> [STUDIO] -->
+				<ee:transform doc:name="Transform Message" doc:id="a8415662-b884-48e4-9e63-d2d26802a231" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+import * from dw::core::Strings
+import withMaxSize from dw::core::Strings
+fun formatdate(d: DateTime) = d as String {
+       format: "yyyyMMdd"
+}
+fun formatyear(d: DateTime) = d as String {
+       format: "yyyy"
+}
+---
+{
+	
+       IM_COMP_CODE: "TL01",
+       IM_DOC_TYPE: "ZTRA",
+       IM_CREAT_DATE: formatdate(now()>>'America/Mexico_City') default "",
+       IM_CREATED_BY: "Medistik",
+       IM_VENDOR: payload.Load.carrierCode,
+       IM_PURCH_ORG: "1810",
+       IM_PUR_GROUP: "113",
+       IM_CURRENCY: payload.Load.currencyCode,
+       IM_DOC_DATE: formatdate(now()>>'America/Mexico_City') default "",
+       IM_IHREZ: payload.Load.systemLoadID,
+       IM_BELNR: "",
+       IM_GJAHR: formatyear(now()>>'America/Mexico_City') default "",
+       IM_POTEXTHEADER: payload.Load.systemLoadID default "",
+       IM_COND_VALUE:  "",
+       IM_IT_ITEM: payload.Load.transaction map (item,index)->  {
+             IM_ITEM: leftPad ((index +1)*10,5,0),
+             IM_ADRN2: p("purchaseorder.imadrn2"),
+             IM_SHORT_TEXT: "FLAT Load" ++ payload.Load.systemLoadID,
+             IM_MATERIAL: "000000000003000476",
+             IM_PLANT: "1802",
+             IM_QUANTITY: "1.000",
+             IM_PO_UNIT: "SER",
+             IM_NET_PRICE: item.chargedAmount,
+             IM_TAX_CODE: "W1",
+             IM_ACCTASSCAT: "K",
+             IM_FUND: "",
+             IM_FUNDS_CTR: "",
+             IM_DELIVERY_DATE: formatdate(now()>>'America/Mexico_City') default "",
+             IM_COSTCENTER: "TT010101" default "",
+             IM_EAN11: payload.Load.systemLoadID,
+             IM_POTEXTITEM: item.chargeId default "",
+             IM_EM_ITEM_TEXT: "Load:" ++ (payload.Load.systemLoadID default ""),
+       },
+       "EX_RETURN": {
+    "EX_ID_ORDEN_COMPRA": "",
+    "EX_STATUS": "",
+    "EX_IT_MENSAJE": [
+      {
+        "EX_ID_MSG": "",
+        "EX_DESC": ""
+      }
     ]
   }
 }
 ]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
+					</ee:message>
+				</ee:transform>
 			</when>
 			<when expression='attributes.queryParams.srcSystem == "VM"'>
 				<ee:transform doc:name="Build Request" doc:id="bf607358-d150-476c-9b12-11459c708797">
@@ -147,6 +209,70 @@ payload.Load.cancelations.VMXId
 					</ee:variables>
 				</ee:transform>
 			</when>
+			<when expression='attributes.queryParams.srcSystem == "IMSS"'>
+				<ee:transform doc:name="Transform Message" doc:id="4f314537-7b46-4f8f-9e0f-57f23802155d" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+import * from dw::core::Strings
+import withMaxSize from dw::core::Strings
+fun formatdate(d: DateTime) = d as String {
+       format: "yyyyMMdd"
+}
+fun formatyear(d: DateTime) = d as String {
+       format: "yyyy"
+}
+---
+{
+	
+       IM_COMP_CODE: "TL01",
+       IM_DOC_TYPE: "ZTRA",
+       IM_CREAT_DATE: formatdate(now()>>'America/Mexico_City') default "",
+       IM_CREATED_BY: "",
+       IM_VENDOR: payload.Load.carrierCode,
+       IM_PURCH_ORG: "1810",
+       IM_PUR_GROUP: "113",
+       IM_CURRENCY: payload.Load.currencyCode,
+       IM_DOC_DATE: formatdate(now()>>'America/Mexico_City') default "",
+       IM_IHREZ: payload.Load.systemLoadID,
+       IM_BELNR: "",
+       IM_GJAHR: formatyear(now()>>'America/Mexico_City') default "",
+       IM_POTEXTHEADER: payload.Load.systemLoadID default "",
+       IM_COND_VALUE:  "",
+       IM_IT_ITEM: payload.Load.transaction map (item,index)->  {
+             IM_ITEM: leftPad ((index +1)*10,5,0),
+             IM_ADRN2: p("purchaseorder.imadrn2"),
+             IM_SHORT_TEXT: "",
+             IM_MATERIAL: item.material,
+             IM_PLANT: "1802",
+             IM_QUANTITY: "1.000",
+             IM_PO_UNIT: "SER",
+             IM_NET_PRICE: item.chargedAmount,
+             IM_TAX_CODE: "W1",
+             IM_ACCTASSCAT: "K",
+             IM_FUND: "",
+             IM_FUNDS_CTR: "",
+             IM_DELIVERY_DATE: formatdate(now()>>'America/Mexico_City') default "",
+             IM_COSTCENTER: payload.Load.CeCo default "",
+             IM_EAN11: payload.Load.systemLoadID,
+             IM_POTEXTITEM: item.chargeId default "",
+             IM_EM_ITEM_TEXT: "Load:" ++ (payload.Load.systemLoadID default ""),
+       },
+       "EX_RETURN": {
+    "EX_ID_ORDEN_COMPRA": "",
+    "EX_STATUS": "",
+    "EX_IT_MENSAJE": [
+      {
+        "EX_ID_MSG": "",
+        "EX_DESC": ""
+      }
+    ]
+  }
+}
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
 			<otherwise>
 				<logger level="INFO" doc:name="Logger" doc:id="a1a5e269-012e-46fa-97dc-4729da294a2d" message="***************************** Invalid srcSystem  *************************************" />
 			</otherwise>
@@ -171,7 +297,7 @@ payload.Load.cancelations.VMXId
 				<traxion-s-logger:input-parameter key="message_type" value="Response" />
 				<traxion-s-logger:input-parameter key="reference1" value="F" />
 				<traxion-s-logger:input-parameter key="source" value="Purchase Order" />
-				<traxion-s-logger:input-parameter key="id" value='#[vars.system_id default ""]' />
+				<traxion-s-logger:input-parameter key="id" value='#[vars.sapRQ.IM_IHREZ default ""]' />
 				<traxion-s-logger:input-parameter key="reference2" value="#[correlationId]" />
 			</traxion-s-logger:input-parameters>
 		</traxion-s-logger:logger-traxion>
@@ -182,16 +308,16 @@ import * from dw::core::Strings
 output application/json
 ---
 {
-  "srcSystem": attributes.queryParams.srcSystem,
+  "srcSystem": vars.srcSystem,
   "loadId": vars.sapRQ.IM_IHREZ default "",
   "profitCenter": vars.sapRQ.IM_IT_ITEM.IM_COSTCENTER[0] default "",
   "monto": sum(vars.sapRQ.IM_IT_ITEM.IM_NET_PRICE ) default "",
   "moneda": vars.sapRQ.IM_CURRENCY default "",
-  "numeroDocSap": payload.d.ex_it_return.results.ex_belnr[0] default "",
+  "numeroDocSap": payload.d.EX_RETURN.EX_ID_ORDEN_COMPRA default "",
   "numeroDocMigo": (payload.d.EX_RETURN.EX_IT_MENSAJE.results filter ($.EX_ID_MSG == 'MGO' ))[0].EX_DESC default "",
   "sociedad": vars.sapRQ.IM_COMP_CODE default "",
   "fecha_contabilizacion":payload.d.ex_it_return.results.ex_bldat[0] default "",
-  "statusSap": payload.d.ex_status default "E",
+  "statusSap": payload.d.EX_RETURN.EX_STATUS default "E",
   "statusCommit": ""
 }]]]></traxion-s-logger:message>
 			<traxion-s-logger:input-parameters >
