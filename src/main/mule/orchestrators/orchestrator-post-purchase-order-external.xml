@@ -9,7 +9,13 @@ http://www.mulesoft.org/schema/mule/traxion-s-logger http://www.mulesoft.org/sch
 http://www.mulesoft.org/schema/mule/process-provision-cost-api http://www.mulesoft.org/schema/mule/process-provision-cost-api/current/mule-process-provision-cost-api.xsd">
 	<sub-flow name="orchestrator-post-purchase-order-external" doc:id="47eb1bb4-3ce4-4c01-98f2-5562a9d5c306" >
 		<logger level="INFO" doc:name="Logger" doc:id="00375705-b889-46e1-b56d-6689d220e2ac" message="#[payload]"/>
-		<set-variable value="#[attributes.queryParams.srcSystem]" doc:name="Set Variable" doc:id="0a5c45a8-60bc-46ff-ae68-f1310fdd73e2" variableName="srcSystem"/>
+		<ee:transform doc:name="Transform Message" doc:id="9b761ce6-b762-4a10-a713-2576d6ab1520">
+			<ee:message />
+			<ee:variables>
+				<ee:set-variable variableName="payloadBK"><![CDATA[payload]]></ee:set-variable>
+				<ee:set-variable variableName="srcSystem" ><![CDATA[attributes.queryParams.srcSystem]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
 		<choice doc:name="Choice" doc:id="a6dac7e9-99d4-4f57-8083-78259bc37866">
 			<when expression='attributes.queryParams.srcSystem == "MD"' >
 				<!-- [STUDIO:"Transform Message"]<ee:transform doc:name="Transform Message" doc:id="b4f34588-d761-45e5-9d45-f78a148b3b85">
@@ -152,8 +158,7 @@ fun formatyear(d: DateTime) = d as String {
        format: "yyyy"
 }
 ---
-{
-	
+[{
        IM_COMP_CODE: "VM00",
        IM_DOC_TYPE: if (payload.Load.serviceType == "Origen") "ZVMO" else if (payload.Load.serviceType == "Destino") "ZVMD" else "ZVMO",
        IM_CREAT_DATE: formatdate(now()>>'America/Mexico_City') default "",
@@ -197,7 +202,7 @@ fun formatyear(d: DateTime) = d as String {
       }
     ]
   }
-}
+}]
 ]]></ee:set-payload>
 					</ee:message>
 					<ee:variables >
@@ -210,53 +215,121 @@ payload.Load.cancelations.VMXId
 				</ee:transform>
 			</when>
 			<when expression='attributes.queryParams.srcSystem == "IMSS"'>
-				<ee:transform doc:name="Transform Message" doc:id="4f314537-7b46-4f8f-9e0f-57f23802155d" >
+				<ee:transform doc:name="Transform Message1" doc:id="b415c0e6-9d70-446d-84ee-b639f92ee891" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload.Pedido.paradas map (parada) ->
+  (payload.Pedido - "paradas") ++ { parada: parada }]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<foreach doc:name="For Each" doc:id="19b56ddc-c2b3-449e-99e3-55251b4a4bae" collection="#[payload]" >
+					<ee:transform doc:name="Transform Message" doc:id="bf6241e6-ad42-4fbd-8520-734ca3903c01" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+						</ee:message>
+						<ee:variables >
+							<ee:set-variable variableName="operation" ><![CDATA["salesOrder"]]></ee:set-variable>
+						</ee:variables>
+					</ee:transform>
+					<flow-ref doc:name="Call clients-process-sap-income-provision" doc:id="c93ce00d-4d6d-4061-a661-c81f9852e787" name="clients-process-sap-income-provision" />
+				</foreach>
+				<set-payload value="#[vars.payloadBK]" doc:name="Set Payload" doc:id="567b22ae-6482-4928-8ccc-97c76d7b7ad5" />
+				<ee:transform doc:name="Transform Message" doc:id="4f314537-7b46-4f8f-9e0f-57f23802155d">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 import * from dw::core::Strings
 import withMaxSize from dw::core::Strings
 fun formatdate(d: DateTime) = d as String {
        format: "yyyyMMdd"
 }
-fun formatyear(d: DateTime) = d as String {
-       format: "yyyy"
-}
 ---
-{
+[
+    {
 	
        IM_COMP_CODE: "TL01",
        IM_DOC_TYPE: "ZTRA",
        IM_CREAT_DATE: formatdate(now()>>'America/Mexico_City') default "",
-       IM_CREATED_BY: "",
-       IM_VENDOR: payload.Load.carrierCode,
+       IM_CREATED_BY: payload.Pedido.usuario,
+       IM_VENDOR: payload.Pedido.transportes,
        IM_PURCH_ORG: "1810",
        IM_PUR_GROUP: "113",
-       IM_CURRENCY: payload.Load.currencyCode,
+       IM_CURRENCY: payload.Pedido.moneda,
        IM_DOC_DATE: formatdate(now()>>'America/Mexico_City') default "",
-       IM_IHREZ: payload.Load.systemLoadID,
+       IM_IHREZ: payload.Pedido.idViaje ++ "F",
        IM_BELNR: "",
-       IM_GJAHR: formatyear(now()>>'America/Mexico_City') default "",
-       IM_POTEXTHEADER: payload.Load.systemLoadID default "",
-       IM_COND_VALUE:  "",
-       IM_IT_ITEM: payload.Load.transaction map (item,index)->  {
-             IM_ITEM: leftPad ((index +1)*10,5,0),
-             IM_ADRN2: p("purchaseorder.imadrn2"),
-             IM_SHORT_TEXT: "",
-             IM_MATERIAL: item.material,
+       IM_GJAHR: (now()>>'America/Mexico_City') as String {format: "yyyy"} default "",
+       IM_POTEXTHEADER: payload.Pedido.idViaje default "",
+       IM_COND_VALUE:  "0",
+       IM_IT_ITEM: {
+             IM_ITEM: "00010",
+             IM_ADRN2: "",/*p("purchaseorder.imadrn2"),*/
+             IM_SHORT_TEXT: "Servicios Logisticos Load " ++ payload.Pedido.idViaje,
+             IM_MATERIAL: "000000000003000108",
              IM_PLANT: "1802",
              IM_QUANTITY: "1.000",
              IM_PO_UNIT: "SER",
-             IM_NET_PRICE: item.chargedAmount,
+             IM_NET_PRICE: payload.Pedido.montoFlete,
              IM_TAX_CODE: "W1",
              IM_ACCTASSCAT: "K",
              IM_FUND: "",
              IM_FUNDS_CTR: "",
              IM_DELIVERY_DATE: formatdate(now()>>'America/Mexico_City') default "",
-             IM_COSTCENTER: payload.Load.CeCo default "",
-             IM_EAN11: payload.Load.systemLoadID,
-             IM_POTEXTITEM: item.chargeId default "",
-             IM_EM_ITEM_TEXT: "Load:" ++ (payload.Load.systemLoadID default ""),
+             IM_COSTCENTER: "TT010101",
+             IM_EAN11: payload.Pedido.idViaje,
+             IM_POTEXTITEM: "",
+             IM_EM_ITEM_TEXT: "Load:" ++ (payload.Pedido.idViaje default ""),
+       },
+       "EX_RETURN": {
+    "EX_ID_ORDEN_COMPRA": "",
+    "EX_STATUS": "",
+    "EX_IT_MENSAJE": [
+      {
+        "EX_ID_MSG": "",
+        "EX_DESC": ""
+      }
+    ]
+  }
+},
+{
+	
+       IM_COMP_CODE: "TL01",
+       IM_DOC_TYPE: "ZTRA",
+       IM_CREAT_DATE: formatdate(now()>>'America/Mexico_City') default "",
+       IM_CREATED_BY: payload.Pedido.usuario,
+       IM_VENDOR: payload.Pedido.transportes,
+       IM_PURCH_ORG: "1810",
+       IM_PUR_GROUP: "113",
+       IM_CURRENCY: payload.Pedido.moneda,
+       IM_DOC_DATE: formatdate(now()>>'America/Mexico_City') default "",
+       IM_IHREZ: payload.Pedido.idViaje ++ "A",
+       IM_BELNR: "",
+       IM_GJAHR: (now()>>'America/Mexico_City') as String {format: "yyyy"} default "",
+       IM_POTEXTHEADER: payload.Pedido.idViaje default "",
+       IM_COND_VALUE:  "0",
+       IM_IT_ITEM: {
+             IM_ITEM: "00010",
+             IM_ADRN2: "",/*p("purchaseorder.imadrn2"),*/
+             IM_SHORT_TEXT: "Servicios Logisticos Load " ++ payload.Pedido.idViaje,
+             IM_MATERIAL: "000000000003000108",
+             IM_PLANT: "1802",
+             IM_QUANTITY: "1.000",
+             IM_PO_UNIT: "SER",
+             IM_NET_PRICE: payload.Pedido.totalIncidencias,
+             IM_TAX_CODE: "W1",
+             IM_ACCTASSCAT: "K",
+             IM_FUND: "",
+             IM_FUNDS_CTR: "",
+             IM_DELIVERY_DATE: formatdate(now()>>'America/Mexico_City') default "",
+             IM_COSTCENTER: "TT010101",
+             IM_EAN11: payload.Pedido.idViaje,
+             IM_POTEXTITEM: "",
+             IM_EM_ITEM_TEXT: "Load:" ++ (payload.Pedido.idViaje default ""),
        },
        "EX_RETURN": {
     "EX_ID_ORDEN_COMPRA": "",
@@ -269,7 +342,7 @@ fun formatyear(d: DateTime) = d as String {
     ]
   }
 }
-]]></ee:set-payload>
+]]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
 			</when>
@@ -277,20 +350,21 @@ fun formatyear(d: DateTime) = d as String {
 				<logger level="INFO" doc:name="Logger" doc:id="a1a5e269-012e-46fa-97dc-4729da294a2d" message="***************************** Invalid srcSystem  *************************************" />
 			</otherwise>
 		</choice>
-		<set-variable value="#[payload]" doc:name="Set Variable" doc:id="ae1d8635-0d9d-441d-b33f-6f0bf44da09e" variableName="sapRQ" />
-		<traxion-s-logger:logger-traxion messageType="JSON" doc:name="Save SAP RQ" doc:id="5ac8f122-9725-42ff-a502-74eb0e8f83d2" config-ref="Traxion_s_logger_Config" activityName="Purchase-Order-SAP_RQ" destinationName="${jms.queue.commons.logs}" writeInLog="${traxion.settings.logs.write}">
+		<foreach doc:name="For Each" doc:id="de4267b0-f076-4e71-8ebf-17f411b8a382" collection="#[payload]">
+			<set-variable value="#[payload]" doc:name="Set Variable" doc:id="ae1d8635-0d9d-441d-b33f-6f0bf44da09e" variableName="sapRQ" />
+			<traxion-s-logger:logger-traxion messageType="JSON" doc:name="Save SAP RQ" doc:id="5ac8f122-9725-42ff-a502-74eb0e8f83d2" config-ref="Traxion_s_logger_Config" activityName="Purchase-Order-SAP_RQ" destinationName="${jms.queue.commons.logs}" writeInLog="${traxion.settings.logs.write}">
 			<traxion-s-logger:input-parameters>
 				<traxion-s-logger:input-parameter key="date" value="#[(now()&gt;&gt;'America/Mexico_City') as String {format: &quot;y-MM-dd&quot;}]" />
 				<traxion-s-logger:input-parameter key="reference3" value="#[vars.srcSystem]" />
 				<traxion-s-logger:input-parameter key="message_type" value="Request" />
-				<traxion-s-logger:input-parameter key="reference1" value='F' />
+				<traxion-s-logger:input-parameter key="reference1" value="F" />
 				<traxion-s-logger:input-parameter key="source" value="Purchase Order" />
 				<traxion-s-logger:input-parameter key="id" value='#[vars.sapRQ.IM_IHREZ default ""]' />
 				<traxion-s-logger:input-parameter key="reference2" value="#[correlationId]" />
 			</traxion-s-logger:input-parameters>
 		</traxion-s-logger:logger-traxion>
-		<flow-ref doc:name="call clients-system-sap-generatePurchaseOrder" doc:id="a484f77e-b9a6-49f6-8cc0-2569036d04c0" name="clients-system-sap-purchaseorder" />
-		<traxion-s-logger:logger-traxion messageType="JSON" doc:name="Save SAP RS" doc:id="4787cccb-a956-4198-a040-f2232e441c0d" config-ref="Traxion_s_logger_Config" activityName="Purchase-Order-SAP_RQ" destinationName="${jms.queue.commons.logs}" writeInLog="${traxion.settings.logs.write}">
+			<flow-ref doc:name="call clients-system-sap-generatePurchaseOrder" doc:id="a484f77e-b9a6-49f6-8cc0-2569036d04c0" name="clients-system-sap-purchaseorder" />
+			<traxion-s-logger:logger-traxion messageType="JSON" doc:name="Save SAP RS" doc:id="4787cccb-a956-4198-a040-f2232e441c0d" config-ref="Traxion_s_logger_Config" activityName="Purchase-Order-SAP_RQ" destinationName="${jms.queue.commons.logs}" writeInLog="${traxion.settings.logs.write}">
 			<traxion-s-logger:input-parameters>
 				<traxion-s-logger:input-parameter key="date" value="#[(now()&gt;&gt;'America/Mexico_City') as String {format: &quot;y-MM-dd&quot;}]" />
 				<traxion-s-logger:input-parameter key="reference3" value="#[vars.srcSystem]" />
@@ -301,9 +375,9 @@ fun formatyear(d: DateTime) = d as String {
 				<traxion-s-logger:input-parameter key="reference2" value="#[correlationId]" />
 			</traxion-s-logger:input-parameters>
 		</traxion-s-logger:logger-traxion>
-		<set-variable value="#[payload]" doc:name="Set Variable" doc:id="67b61e93-477b-4644-8086-62918c8d29d5" variableName="RsBack"/>
-		<traxion-s-logger:logger-traxion messageType="JSON" doc:name="Auditoria - SAP Record" doc:id="1842caf6-f035-42e6-8a46-41791d66f4f5" config-ref="Traxion_s_logger_Config" activityName="Purchase-Order-SAP_Record" destinationName="${jms.queue.proccess.sap.logger}" writeInLog="${traxion.settings.logs.write}" >
-			<traxion-s-logger:message ><![CDATA[#[%dw 2.0
+			<set-variable value="#[payload]" doc:name="Set Variable" doc:id="67b61e93-477b-4644-8086-62918c8d29d5" variableName="RsBack" />
+			<traxion-s-logger:logger-traxion messageType="JSON" doc:name="Auditoria - SAP Record" doc:id="1842caf6-f035-42e6-8a46-41791d66f4f5" config-ref="Traxion_s_logger_Config" activityName="Purchase-Order-SAP_Record" destinationName="${jms.queue.proccess.sap.logger}" writeInLog="${traxion.settings.logs.write}">
+			<traxion-s-logger:message><![CDATA[#[%dw 2.0
 import * from dw::core::Strings
 output application/json
 ---
@@ -320,11 +394,12 @@ output application/json
   "statusSap": payload.d.EX_RETURN.EX_STATUS default "E",
   "statusCommit": ""
 }]]]></traxion-s-logger:message>
-			<traxion-s-logger:input-parameters >
+			<traxion-s-logger:input-parameters>
 				<traxion-s-logger:input-parameter key="correlation_id" value="#[correlationId]" />
 				<traxion-s-logger:input-parameter key="type" value="DB" />
 			</traxion-s-logger:input-parameters>
 		</traxion-s-logger:logger-traxion>
+		</foreach>
 		<async doc:name="Async" doc:id="b25289a9-963b-47d4-a63f-f76794334d4e" >
 			<choice doc:name="Choice" doc:id="505180fc-c04f-4b17-9663-9bee67feafc9">
 			<when expression='#[payload.d.EX_RETURN.EX_STATUS == "S"]'>

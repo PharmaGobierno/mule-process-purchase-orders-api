@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:process-provision-cost-api="http://www.mulesoft.org/schema/mule/process-provision-cost-api" xmlns:traxion-s-logger="http://www.mulesoft.org/schema/mule/traxion-s-logger"
-	xmlns:db="http://www.mulesoft.org/schema/mule/db"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:process-sap-income-api="http://www.mulesoft.org/schema/mule/process-sap-income-api" xmlns:process-provision-cost-api="http://www.mulesoft.org/schema/mule/process-provision-cost-api"
+	xmlns:traxion-s-logger="http://www.mulesoft.org/schema/mule/traxion-s-logger"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
 http://www.mulesoft.org/schema/mule/traxion-s-logger http://www.mulesoft.org/schema/mule/traxion-s-logger/current/mule-traxion-s-logger.xsd
-http://www.mulesoft.org/schema/mule/process-provision-cost-api http://www.mulesoft.org/schema/mule/process-provision-cost-api/current/mule-process-provision-cost-api.xsd">
+http://www.mulesoft.org/schema/mule/process-provision-cost-api http://www.mulesoft.org/schema/mule/process-provision-cost-api/current/mule-process-provision-cost-api.xsd
+http://www.mulesoft.org/schema/mule/process-sap-income-api http://www.mulesoft.org/schema/mule/process-sap-income-api/current/mule-process-sap-income-api.xsd">
 	<http:request-config name="client-system-tms-connection-HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="8c07d10a-858e-4f5a-b276-a1ab891d081d" responseTimeout="1200000">
 		<http:request-connection host="${client.system.tmsconnection.http.host}" maxConnections="${client.system-tms-connection.http.max.connections}" connectionIdleTimeout="${client.system-tms-connection.http.connection.idle.timeout}" responseBufferSize="${client.system-tms-connection.http.response.buffer.size}" protocol="HTTPS" tlsContext="TLS_Context" port="443"/>
 		<expiration-policy />
@@ -34,4 +35,5 @@ http://www.mulesoft.org/schema/mule/process-provision-cost-api http://www.muleso
 		<http:request-connection protocol="HTTPS" host="${client.system.tmsmobile.http.host}" port="443" maxConnections="${client.system.tmsmobile.max.connections}" connectionIdleTimeout="${client.system.tmsmobile.http.connection.idle.timeout}" responseBufferSize="${client.system.tmsmobile.http.response.buffer.size}" />
 	</http:request-config>
 	<process-provision-cost-api:config name="Process_provision_cost_api_Config" doc:name="Process-provision-cost-api Config" doc:id="d5af4dcf-b340-40ca-927b-f87932e6db2a" property_host="${client.process.provision.cost.https.host}" property_port="${client.process.provision.cost.https.port}" property_basePath="/api/" property_protocol="HTTPS" property_responseTimeout="${client.process.provision.cost.https.connection.idle.timeout}" />
+	<process-sap-income-api:config name="Process_sap_income_api_Config" doc:name="Process-sap-income-api Config" doc:id="a2d8e78c-b848-4131-a914-b6c7ca7fdfa8" property_host="${client.process.sap.income.https.host}" property_port="${client.process.sap.income.https.port}" property_basePath="/api/" property_protocol="HTTPS" property_responseTimeout="${client.process.sap.income.https.connection.idle.timeout}" />
 </mule>

@@ -96,12 +96,6 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.mule.connectors</groupId>
-			<artifactId>mule-http-connector</artifactId>
-			<version>1.5.24</version>
-			<classifier>mule-plugin</classifier>
-		</dependency>
-		<dependency>
-			<groupId>org.mule.connectors</groupId>
 			<artifactId>mule-sockets-connector</artifactId>
 			<version>1.2.1</version>
 			<classifier>mule-plugin</classifier>
@@ -179,15 +173,27 @@
 		</dependency>
 		<dependency>
 			<groupId>ab8117f6-d718-4307-b5f7-03262d589cd0</groupId>
+			<artifactId>mule-plugin-process-provision-cost-api</artifactId>
+			<version>1.1.5</version>
+			<classifier>mule-plugin</classifier>
+		</dependency>
+		<dependency>
+			<groupId>ab8117f6-d718-4307-b5f7-03262d589cd0</groupId>
 			<artifactId>process-purchase-orders-api</artifactId>
-			<version>1.1.0</version>
+			<version>1.1.1</version>
 			<classifier>raml</classifier>
 			<type>zip</type>
 		</dependency>
 		<dependency>
 			<groupId>ab8117f6-d718-4307-b5f7-03262d589cd0</groupId>
-			<artifactId>mule-plugin-process-provision-cost-api</artifactId>
-			<version>1.1.5</version>
+			<artifactId>mule-plugin-process-sap-income-api</artifactId>
+			<version>1.1.6</version>
+			<classifier>mule-plugin</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.mule.connectors</groupId>
+			<artifactId>mule-http-connector</artifactId>
+			<version>1.9.0</version>
 			<classifier>mule-plugin</classifier>
 		</dependency>
 	</dependencies>
