@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:process-sap-income-api="http://www.mulesoft.org/schema/mule/process-sap-income-api" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/process-sap-income-api http://www.mulesoft.org/schema/mule/process-sap-income-api/current/mule-process-sap-income-api.xsd">
+	<sub-flow name="clients-process-sap-income-provision" doc:id="cfdecbab-6919-4a66-b77e-889133de2f6d" >
+		<process-sap-income-api:sap-external-income-provision doc:name="SAP External income provision" doc:id="9064fdb0-534b-413b-8b00-31cab7acbafd" config-ref="Process_sap_income_api_Config" operation-type="#[vars.operation]" src-system="#[vars.srcSystem]" client-id="#[p('client.process.sap.income.https.client.id')]" client-secret="#[p('client.process.sap.income.https.client.secret')]" />
+	</sub-flow>
+</mule>
