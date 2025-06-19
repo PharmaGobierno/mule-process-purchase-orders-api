@@ -266,10 +266,10 @@ fun formatdate(d: DateTime) = d as String {
        IM_GJAHR: (now()>>'America/Mexico_City') as String {format: "yyyy"} default "",
        IM_POTEXTHEADER: payload.Pedido.idViaje default "",
        IM_COND_VALUE:  "0",
-       IM_IT_ITEM: {
+       IM_IT_ITEM: [{
              IM_ITEM: "00010",
              IM_ADRN2: "",/*p("purchaseorder.imadrn2"),*/
-             IM_SHORT_TEXT: "Servicios Logisticos Load " ++ payload.Pedido.idViaje,
+             IM_SHORT_TEXT: "FLAT Load " ++ payload.Pedido.idViaje,
              IM_MATERIAL: "000000000003000108",
              IM_PLANT: "1802",
              IM_QUANTITY: "1.000",
@@ -284,7 +284,7 @@ fun formatdate(d: DateTime) = d as String {
              IM_EAN11: payload.Pedido.idViaje,
              IM_POTEXTITEM: "",
              IM_EM_ITEM_TEXT: "Load:" ++ (payload.Pedido.idViaje default ""),
-       },
+       }],
        "EX_RETURN": {
     "EX_ID_ORDEN_COMPRA": "",
     "EX_STATUS": "",
@@ -312,7 +312,7 @@ fun formatdate(d: DateTime) = d as String {
        IM_GJAHR: (now()>>'America/Mexico_City') as String {format: "yyyy"} default "",
        IM_POTEXTHEADER: payload.Pedido.idViaje default "",
        IM_COND_VALUE:  "0",
-       IM_IT_ITEM: {
+       IM_IT_ITEM: [{
              IM_ITEM: "00010",
              IM_ADRN2: "",/*p("purchaseorder.imadrn2"),*/
              IM_SHORT_TEXT: "Servicios Logisticos Load " ++ payload.Pedido.idViaje,
@@ -330,7 +330,7 @@ fun formatdate(d: DateTime) = d as String {
              IM_EAN11: payload.Pedido.idViaje,
              IM_POTEXTITEM: "",
              IM_EM_ITEM_TEXT: "Load:" ++ (payload.Pedido.idViaje default ""),
-       },
+       }],
        "EX_RETURN": {
     "EX_ID_ORDEN_COMPRA": "",
     "EX_STATUS": "",
