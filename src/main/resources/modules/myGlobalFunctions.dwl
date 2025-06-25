@@ -62,6 +62,7 @@ fun getVMTax(carrier: String)
 if(carrier == "309002579")"W3" else
 if(carrier == "309002578")"W3" else
 if(carrier == "309002619")"W3" else
+if(carrier == "309002700")"W3" else
 if(carrier == "309002646")"W0" else
 if(carrier == "309002573")"W0" else
 if(carrier == "325001644")"W0" else
