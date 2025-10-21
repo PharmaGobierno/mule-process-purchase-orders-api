@@ -346,6 +346,114 @@ fun formatdate(d: DateTime) = d as String {
 					</ee:message>
 				</ee:transform>
 			</when>
+			<when expression='attributes.queryParams.srcSystem == "SLTC"'>
+				<ee:transform doc:name="Transform Message" doc:id="bd07408a-2453-42b3-b4ff-c22dbae1e8bd">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+import * from dw::core::Strings
+import withMaxSize from dw::core::Strings
+fun formatdate(d: DateTime) = d as String {
+       format: "yyyyMMdd"
+}
+---
+[
+    {
+	
+       IM_COMP_CODE: "TL01",
+       IM_DOC_TYPE: "ZTRA",
+       IM_CREAT_DATE: formatdate(now()>>'America/Mexico_City') default "",
+       IM_CREATED_BY: payload.Pedido.usuario,
+       IM_VENDOR: payload.Pedido.transportes,
+       IM_PURCH_ORG: "1810",
+       IM_PUR_GROUP: "113",
+       IM_CURRENCY: payload.Pedido.moneda,
+       IM_DOC_DATE: formatdate(now()>>'America/Mexico_City') default "",
+       IM_IHREZ: payload.Pedido.idViaje ++ "F",
+       IM_BELNR: "",
+       IM_GJAHR: (now()>>'America/Mexico_City') as String {format: "yyyy"} default "",
+       IM_POTEXTHEADER: payload.Pedido.idViaje default "",
+       IM_COND_VALUE:  "0",
+       IM_IT_ITEM: [{
+             IM_ITEM: "00010",
+             IM_ADRN2: "",/*p("purchaseorder.imadrn2"),*/
+             IM_SHORT_TEXT: "FLAT Load " ++ payload.Pedido.idViaje,
+             IM_MATERIAL: "000000000003000108",
+             IM_PLANT: "1802",
+             IM_QUANTITY: "1.000",
+             IM_PO_UNIT: "SER",
+             IM_NET_PRICE: payload.Pedido.montoFlete,
+             IM_TAX_CODE: "W1",
+             IM_ACCTASSCAT: "K",
+             IM_FUND: "",
+             IM_FUNDS_CTR: "",
+             IM_DELIVERY_DATE: formatdate(now()>>'America/Mexico_City') default "",
+             IM_COSTCENTER: "TT010101",
+             IM_EAN11: payload.Pedido.idViaje,
+             IM_POTEXTITEM: "",
+             IM_EM_ITEM_TEXT: "Load:" ++ (payload.Pedido.idViaje default ""),
+       }],
+       "EX_RETURN": {
+    "EX_ID_ORDEN_COMPRA": "",
+    "EX_STATUS": "",
+    "EX_IT_MENSAJE": [
+      {
+        "EX_ID_MSG": "",
+        "EX_DESC": ""
+      }
+    ]
+  }
+},
+{
+	
+       IM_COMP_CODE: "TL01",
+       IM_DOC_TYPE: "ZTRA",
+       IM_CREAT_DATE: formatdate(now()>>'America/Mexico_City') default "",
+       IM_CREATED_BY: payload.Pedido.usuario,
+       IM_VENDOR: payload.Pedido.transportes,
+       IM_PURCH_ORG: "1810",
+       IM_PUR_GROUP: "113",
+       IM_CURRENCY: payload.Pedido.moneda,
+       IM_DOC_DATE: formatdate(now()>>'America/Mexico_City') default "",
+       IM_IHREZ: payload.Pedido.idViaje ++ "A",
+       IM_BELNR: "",
+       IM_GJAHR: (now()>>'America/Mexico_City') as String {format: "yyyy"} default "",
+       IM_POTEXTHEADER: payload.Pedido.idViaje default "",
+       IM_COND_VALUE:  "0",
+       IM_IT_ITEM: [{
+             IM_ITEM: "00010",
+             IM_ADRN2: "",/*p("purchaseorder.imadrn2"),*/
+             IM_SHORT_TEXT: "Servicios Logisticos Load " ++ payload.Pedido.idViaje,
+             IM_MATERIAL: "000000000003000108",
+             IM_PLANT: "1802",
+             IM_QUANTITY: "1.000",
+             IM_PO_UNIT: "SER",
+             IM_NET_PRICE: payload.Pedido.totalIncidencias,
+             IM_TAX_CODE: "W1",
+             IM_ACCTASSCAT: "K",
+             IM_FUND: "",
+             IM_FUNDS_CTR: "",
+             IM_DELIVERY_DATE: formatdate(now()>>'America/Mexico_City') default "",
+             IM_COSTCENTER: "TT010101",
+             IM_EAN11: payload.Pedido.idViaje,
+             IM_POTEXTITEM: "",
+             IM_EM_ITEM_TEXT: "Load:" ++ (payload.Pedido.idViaje default ""),
+       }],
+       "EX_RETURN": {
+    "EX_ID_ORDEN_COMPRA": "",
+    "EX_STATUS": "",
+    "EX_IT_MENSAJE": [
+      {
+        "EX_ID_MSG": "",
+        "EX_DESC": ""
+      }
+    ]
+  }
+}
+]]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
 			<otherwise>
 				<logger level="INFO" doc:name="Logger" doc:id="a1a5e269-012e-46fa-97dc-4729da294a2d" message="***************************** Invalid srcSystem  *************************************" />
 			</otherwise>
